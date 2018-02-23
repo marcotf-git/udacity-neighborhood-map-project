@@ -1,0 +1,148 @@
+@charset "utf-8";
+/* CSS Document */
+
+html,
+body {
+  font-family: Arial, sans-serif;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Create unequal columns that floats next to each other */
+.column {
+    float: left;
+}
+
+.left {
+    width: 90%;
+}
+
+.right {
+    width: 10%;
+}
+
+/* Three bars (hamburger menu) */
+.bar {
+    width: 17px;
+    height: 3px;
+    background-color: #aaa;
+    margin: 3px 0;
+    display: block;
+}
+
+.container {
+  height: 100%;
+  position: relative;
+}
+
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.options-box {
+  background: #c5c3a0;
+  border: 1px solid #999;
+  border-radius: 3px;
+  height: 100%;
+  line-height: 35px;
+  text-align: left;
+  overflow: scroll;
+}
+
+/* these completes the css for the options box */
+.options-box-desktop {
+  width: 340px;
+  padding: 10px;
+}
+
+.options-box-mobile{
+  width: 180px;
+  padding: 4px;
+}
+
+input {
+  font-size: 12px;
+}
+
+h1 {
+  color: #525454;
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  text-align: left;
+}
+
+#hide-listings,
+#show-listings {
+  width: 48%;
+}
+
+#loading{
+  color: #FF2020;
+}
+
+#logged-message{
+  display: none;
+  color: #2020E0;
+  margin-right: 12px;
+}
+
+hr {
+  background: #D0D7D9;
+  height: 1px;
+  margin: 20px 0 20px 0;
+  border: none;
+}
+
+.map {
+  bottom:0px;
+  height: 100%;
+  position: absolute;
+  right: 0px;
+}
+
+/* These completes the map css */
+.map-desktop {
+  left: 362px;
+}
+
+.map-mobile{
+  left: 186px;
+}
+
+
+#pano {
+  width: 240px;
+  height: 240px;
+}
+
+#places-search,
+#search-within-time-text {
+  width: 84%;
+}
+
+.text {
+  font-size: 12px;
+}
+
+.place-list {
+  font-size: 12px;
+  padding-left: 24px;
+  list-style-type: none;
+}
+
+#toggle-drawing {
+  /*width: 27%;*/
+  position: relative;
+}
+
+#zoom-to-area-text {
+  width: 76%;
+}
+
+#zoom-to-area {
+  /*width: 24%;*/
+}

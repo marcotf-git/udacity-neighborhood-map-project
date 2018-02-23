@@ -19,7 +19,7 @@ d) **JQuery** (<https://jquery.com/>) for making **AJAX** requests to third-part
 
 # Installation
 
-* The application is a one file `.html`. So, we need only to open the file with an internet browser.
+* Just copy the `.html` file and the `css` and `js` folders in the same directory, and open the `.html` file with an internet browser.
 
 * For developers, it is necessary to get a **Google Maps API key** (<https://console.developers.google.com>). You may include the key as the value of the `key` parameter when loading the script in the `.html` file app:
 
