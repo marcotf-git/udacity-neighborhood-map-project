@@ -48,7 +48,7 @@ Well, there are a lot of things you can do with this single page app! 😮
 
 **Measuring the size of the terrain**: You can click on the `Drawing Tools` button to toggle the mouse for drawing. After that, just click once, on the map, to make the first point of the polygon. Continue drawing and clicking to make points, until you close the polygon clicking again on the first point created. It will open a window with the coordinates and the area.
 
-**Zoom to area**: You can enter the address, or the latitude and longitude. If you select a marker, and after that, click inside the address box (at the left of the `Zoom` button), it will copy the address of the marker inside the box. Then, just click `Zoom` button. If you deselect the marker, and click again in the address box, it will automatically clear! This is a pattern of the app: when the marker is selected, its address is copied; when there is no marker selected, just click in the box for clearing it. 👌
+**Zoom to the area**: You can enter the address, or the latitude and longitude. If you select a marker, and after that, click inside the address box (at the left of the `Zoom` button), it will copy the address of the marker inside the box. Then, just click `Zoom` button. If you deselect the marker, and click again in the address box, it will automatically clear! This is a pattern of the app: when the marker is selected, its address is copied; when there is no marker selected, just click in the box for clearing it. 👌
 
 **Getting coordinates of an location**: Well, just create a marker, select it and click in the address box for `Zoom`. It will copy the address and also the geo-coordinates.
 
