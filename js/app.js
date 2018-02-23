@@ -734,14 +734,27 @@ $(document).ready(function() {
                   viewModel.highlightPlace(data, eventType);
                   return;
               }
+
               // Before selecting the marker, deselect all others
+
+              var selfMarker = null;
+
+              function DataMarker(id) {
+                  this.id = id;
+                  this.marker_id = function() {
+                    return this.id;
+                  }
+              }
+
               for (var i = 0; i < viewModel.markers.length; i++) {
                   viewModel.markers[i].status = 'unselected';
                   viewModel.markers[i].setIcon(defaultIcon);
                   // Deselect place
-                  var selfMarker = viewModel.markers[i];
-                  var dataMarker = { marker_id: function() {
-                    return selfMarker.id;} };
+                  var id = viewModel.markers[i].id;
+                  var dataMarker = new DataMarker(id);
+                  console.log('dataMarker:', dataMarker);
+                  // var dataMarker = { marker_id: function() {
+                  //   return selfMarker.id;} };
                   eventType = { type: 'mouseleave'};
                   viewModel.highlightPlace(dataMarker, eventType);
                   // And close the infowindow_distance
@@ -1358,7 +1371,7 @@ $(document).ready(function() {
           // Delete place
           // (Uses the knockout method 'remove')
           viewModel.places.remove(function(place){
-            return place.marker_id() === marker_id});
+            return place.marker_id() === marker_id;});
 
           console.log('end of place and marker deletion');
           console.log('markers', viewModel.markers);
@@ -1394,7 +1407,7 @@ $(document).ready(function() {
           var lat = viewModel.lat();
           var lng = viewModel.lng();
           console.log('in octopus zoom to area, address:', address);
-          if ((lat != '') && (lng != '')) {
+          if ((lat !== '') && (lng !== '')) {
               latitude = Number(lat);
               longitude = Number(lng);
               viewModel.map.panTo({lat: latitude, lng: longitude});
@@ -1500,7 +1513,7 @@ $(document).ready(function() {
                   }
               }
               console.log('origin', origin, 'destinations', destinations);
-              if (destinations.length == 0) {
+              if (destinations.length === 0) {
                   alert("There isn't any destination of the selected type " +
                         "(Marker/Nearby places) on the Map!");
                   return;
@@ -1922,7 +1935,7 @@ $(document).ready(function() {
       clearZoom: function (data){
           console.log('in clear zoom');
           console.log('data', data);
-          if ((data.address()!='')||(data.lat()!='')||(data.lng()!='')){
+          if ((data.address()!=='')||(data.lat()!=='')||(data.lng()!=='')){
               data.address('');
               data.lat('');
               data.lng('');

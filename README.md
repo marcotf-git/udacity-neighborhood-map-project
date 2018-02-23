@@ -93,6 +93,8 @@ https://www.w3schools.com
 
 https://www.w3schools.com/howto/howto_css_browser_window.asp
 
+https://www.w3schools.com/js/js_object_constructors.asp
+
 http://www.javascriptkit.com/jsref/eventkeyboardmouse.shtml
 
 https://developer.mozilla.org/pt-BR/docs/Web/Guide/Events/criando_e_disparando_eventos
