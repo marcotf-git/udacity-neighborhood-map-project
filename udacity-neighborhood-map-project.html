@@ -112,12 +112,12 @@
         <div>
           <span class="text">Explore your places list with:</span>
           <form id="infoAPI" class="text">
-              <input id="googleStreetView" type="radio" name="info"
-					 value="GoogleStreetView" checked> Google Street View<br>
               <input id="googlePlaces" type="radio" name="info"
-					 value="GooglePlaces"> Google Places<br>
+           value="GooglePlaces" data-bind="checked: infoWebsite"> Google Places<br>
+              <input id="googleStreetView" type="radio" name="info"
+					 value="GoogleStreetView" data-bind="checked: infoWebsite"> Google Street View<br>
               <input id="wikipedia" type="radio" name="info"
-					 value="Wikipedia" text="Wikipedia"> Wikipedia
+					 value="Wikipedia" data-bind="checked: infoWebsite"> Wikipedia
           </form>
           <hr>
           <!-- Place deletion -->
