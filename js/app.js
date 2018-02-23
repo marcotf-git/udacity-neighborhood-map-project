@@ -1548,7 +1548,7 @@ $(document).ready(function() {
                   }
               }
               infowindow.setZIndex(destinationMarkers.length);
-          }
+          };
       },
 
       displayMarkersWithinTime: function(response, queried_destinations, destinationMarkers,
@@ -1729,7 +1729,7 @@ $(document).ready(function() {
               marker.setOpacity(1.0);
               // Populate the infowindow
               viewModel.populatePlacesInfoWindow(marker, infowindow);
-          }
+          };
       },
 
       // Helper function for mouse over next listener
@@ -1740,7 +1740,7 @@ $(document).ready(function() {
                   viewModel.highlightPlaceMarker(marker, true);
                   marker.setZIndex(1.0);
               }
-          }
+          };
       },
 
       // Helper function for mouse out next listener
@@ -1751,7 +1751,7 @@ $(document).ready(function() {
                   viewModel.highlightPlaceMarker(marker, false);
                   marker.setZIndex(0);
               }
-        }
+        };
       },
 
       /* This function creates markers for each place found in places search.
@@ -1789,7 +1789,7 @@ $(document).ready(function() {
                 place_id: place.place_id,
                 id: viewModel.lastID.toString()
               });
-              console.log('marker created, marker:', marker)
+              console.log('marker created, marker:', marker);
               console.log('location:', place.geometry.location.toJSON());
               viewModel.lastID += 1;
 
