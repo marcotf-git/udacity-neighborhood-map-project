@@ -103,10 +103,10 @@ $(document).ready(function() {
       // Control the appearance of the screen and return the css classes
       mobile: ko.observable(false),
       optionsClass: ko.pureComputed(function() {
-          return viewModel.mobile() == true ? "options-box-mobile" : "options-box-desktop";
+          return viewModel.mobile() === true ? "options-box-mobile" : "options-box-desktop";
       }),
       mapClass: ko.pureComputed(function() {
-          return viewModel.mobile() == true ? "map-mobile" : "map-desktop";
+          return viewModel.mobile() === true ? "map-mobile" : "map-desktop";
       }),
 
       // Email and password
@@ -247,15 +247,15 @@ $(document).ready(function() {
           console.log('at login');
           console.log('is logged:', viewModel.isLogged());
           // get emmail and password
-          const email = viewModel.email();
-          const pass = viewModel.pass();
+          var email = viewModel.email();
+          var pass = viewModel.pass();
           viewModel.pass('');
           auth = firebase.auth();
           promise = auth.signInWithEmailAndPassword(email, pass);
           promise.catch(function(error) {
               console.log(error, error.message);
               alert("Error: " + error.code);
-              if (error.code == 'auth/user-not-found') {
+              if (error.code === 'auth/user-not-found') {
                   alert('Need to create user first. Click on "Sign up".');
               }
           });
@@ -265,27 +265,27 @@ $(document).ready(function() {
         console.log('at create user');
         var checkup = confirm("Have you typed your email and a password" +
           "created exclusively for this app?");
-        if (checkup == false) {
+        if (checkup === false) {
             alert('It is not possible to create a new user!');
             return;
         } else {
             alert('Creating a new user');
         }
         // get emmail and password
-        const email = viewModel.email();
-        const pass = viewModel.pass();
+        var email = viewModel.email();
+        var pass = viewModel.pass();
         viewModel.pass('');
         auth = firebase.auth();
         promise = auth.createUserWithEmailAndPassword(email, pass);
-        promise.catch(e => {
-          console.log(e, e.message);
-          alert("Error in sign up: " + e.message);
+        promise.catch(function(error) {
+          console.log(error, error.message);
+          alert("Error in sign up: " + error.message);
         });
       },
 
       logout: function() {
           console.log('at log out');
-          const status = firebase.auth().signOut();
+          var status = firebase.auth().signOut();
       },
 
 
@@ -294,7 +294,7 @@ $(document).ready(function() {
       // Saves the places to Firebase or to browser cache
       saveDatabase: function() {
           console.log('saving data-base');
-          console.log('places()', viewModel.places())
+          console.log('places()', viewModel.places());
 
           var cityToSave = viewModel.city();
           var neighborhoodToSave = viewModel.neighborhood();
@@ -305,19 +305,19 @@ $(document).ready(function() {
           {
               var user = viewModel.firebaseUser.uid;
               // Saving the city
-              const cityRef = viewModel.defaultDatabase.ref().child(user + "/city");
+              var cityRef = viewModel.defaultDatabase.ref().child(user + "/city");
               cityRef.set(cityToSave)
                   .catch(function(error) {
                       console.log("City save failed: " + error.message);
                   });
               // Saving the neighborhood
-              const neighborhoodRef = viewModel.defaultDatabase.ref().child(user + "/neighborhood");
+              var neighborhoodRef = viewModel.defaultDatabase.ref().child(user + "/neighborhood");
               neighborhoodRef.set(neighborhoodToSave)
                   .catch(function(error) {
                       console.log("Neighborhood save failed: " + error.message);
                   });
               // Saving places
-              const placesRef = viewModel.defaultDatabase.ref().child(user + "/places");
+              var placesRef = viewModel.defaultDatabase.ref().child(user + "/places");
               placesRef.set(placesToSave)
                   .then(function () {
                       alert("Places saved at Firebase data-base! <firebase.google.com>");
@@ -366,15 +366,15 @@ $(document).ready(function() {
           console.log('loading places from data-base');
           if(viewModel.firebaseUser){
               var user = viewModel.firebaseUser.uid;
-              const cityRef = viewModel.defaultDatabase.ref().child(user + "/city");
-              const neighborhoodRef = viewModel.defaultDatabase.ref().child(user + "/neighborhood");
-              const placesRef = viewModel.defaultDatabase.ref().child(user + "/places").orderByKey();
+              var cityRef = viewModel.defaultDatabase.ref().child(user + "/city");
+              var neighborhoodRef = viewModel.defaultDatabase.ref().child(user + "/neighborhood");
+              var placesRef = viewModel.defaultDatabase.ref().child(user + "/places").orderByKey();
               // Load city
               cityRef.once('value')
                   .then(function(snapshot) {
                       var result = snapshot.val();
                       console.log('result', result);
-                      if (result != null) {
+                      if (result !== null) {
                           viewModel.city(result);
                       }
                   })
@@ -386,7 +386,7 @@ $(document).ready(function() {
                   .then(function(snapshot) {
                       var result = snapshot.val();
                       console.log('result', result);
-                      if (result != null) {
+                      if (result !== null) {
                           viewModel.neighborhood(result);
                       }
                   })
@@ -400,7 +400,7 @@ $(document).ready(function() {
                 .then(function(snapshot) {
                     var result = snapshot.val();
                     console.log('result', result);
-                    if (result != null) {
+                    if (result !== null) {
                         viewModel.places.removeAll();
                         var places = [];
                         for (var i=0; i<result.length; i++) {
@@ -411,14 +411,14 @@ $(document).ready(function() {
                         console.log('places loaded, places:', viewModel.places());
                         // Reinitialize the Map and markers
                         // First, clear the map from markers
-                        for (var i=0; i < viewModel.markers.length; i++){
-                            viewModel.markers[i].setMap(null);
+                        for (var j=0; j < viewModel.markers.length; j++){
+                            viewModel.markers[j].setMap(null);
                         }
                         // Clear the markers array
                         viewModel.markers = [];
                         // Creates new markers array
-                        for (var j=0; j < viewModel.places().length; j++){
-                            viewModel.createMarker(viewModel.places()[j]);
+                        for (var k=0; k < viewModel.places().length; k++){
+                            viewModel.createMarker(viewModel.places()[k]);
                         }
                         // Adjust for markers visibility
                         if(viewModel.markers.length > 0) {
@@ -437,29 +437,29 @@ $(document).ready(function() {
                     "from browser cache (locally stored)...");
               //var anonymous = prompt("Do you want to load locally?", "Yes");
               var anonymous = "Yes";
-              if (anonymous == "Yes"){
+              if (anonymous === "Yes"){
                   try{
                         var city = localStorage.city;
                         var neighborhood = localStorage.neighborhood;
                         var places = localStorage.places;
                         //Load city
-                        if(city != null){
+                        if(city !== null){
                             viewModel.city(city);
                         } else {
                             console.log('loading city error: null');
                         }
                         // Load neighborhood
-                        if(neighborhood != null){
+                        if(neighborhood !== null){
                             viewModel.neighborhood(neighborhood);
                         } else {
                             console.log('loading neighborhood error: null');
                         }
                         // Adjust the map
-                        if((city!=null)||(neighborhood!=null)){
+                        if((city !== null)||(neighborhood !== null)){
                             viewModel.setMapCenter(false);
                         }
                         // Load places
-                        if(places == null){
+                        if(places === null){
                           console.log('places null');
                           alert("Not possible to load locally. No data found.");
                         } else {
@@ -535,8 +535,8 @@ $(document).ready(function() {
             viewModel.setMapCenter(false);
         }
         // Sets the option for pointer style when creating the place
-        viewModel.map.addListener('mouseover', function(event) {
-            if (document.getElementById('add-marker').checked == true) {
+        viewModel.map.addListener('mouseover', function() {
+            if (document.getElementById('add-marker').checked === true) {
               viewModel.map.setOptions({draggableCursor:'crosshair'});
             } else {
               viewModel.map.setOptions({draggableCursor: null});
@@ -547,13 +547,14 @@ $(document).ready(function() {
         viewModel.map.addListener('click', function(event) {
             console.log('in fired map listener','event:', event);
             // Create if the set cursor for markers is selected
-            if (document.getElementById('add-marker').checked == true) {
+            if (document.getElementById('add-marker').checked === true) {
                 var lat = event.latLng.lat();
                 var lng = event.latLng.lng();
                 var address = '';
                 var title = "Marker Title";
                 var place_id = '';
-                if (event.placeId != null) {
+                if (event.placeId !== undefined) {
+                    console.log('event placeId:', event.placeId);
                     place_id = event.placeId;
                 }
                 // Creates the place and the marker
@@ -624,7 +625,7 @@ $(document).ready(function() {
           // Geocode the address/area entered to get the center. Then, center the map
           // on it and zoom in
           geocoder.geocode( { address: address }, function(results, status) {
-              if (status == google.maps.GeocoderStatus.OK) {
+              if (status === google.maps.GeocoderStatus.OK) {
                 console.log('results', results);
                 viewModel.mapOptions.center = results[0].geometry.location;
                 viewModel.mapOptions.bounds = results[0].geometry.viewport;
@@ -635,7 +636,7 @@ $(document).ready(function() {
                 viewModel.map.panTo(viewModel.mapOptions.center);
                 console.log('in set map center, new bounds:', viewModel.mapOptions.bounds);
                 console.log('in set map center, query map bounds:', viewModel.map.getBounds());
-                if (neighborhood != '') {
+                if (neighborhood !== '') {
                   viewModel.map.setZoom(15);
                 } else {
                   viewModel.map.setZoom(12);
@@ -644,7 +645,7 @@ $(document).ready(function() {
                 window.alert('Geocode was not successful for the following reason:' + status);
               }
               console.log('at point 2');
-              if (showMarkers == true) {
+              if (showMarkers === true) {
                   viewModel.showMarkers(true);
               }
             });
@@ -679,13 +680,12 @@ $(document).ready(function() {
           // Increments the id of the markers array
           viewModel.lastID += 1;
           // Set marker listeners
-          var defaultIcon = this.makeMarkerIcon(viewModel.defaultMarkerColor);
           var highlightedIcon = this.makeMarkerIcon(viewModel.highlightedMarkerColor);
           var selectedIcon = this.makeMarkerIcon(viewModel.selectedMarkerColor);
           // Two event listeners - one for mouseover, one for mouseout,
           // to change the colors back and forth.
           marker.addListener('mouseover', function() {
-              if (this.status != 'selected') {
+              if (this.status !== 'selected') {
                   this.setIcon(highlightedIcon);
                   this.setZIndex(1);
               }
@@ -697,7 +697,7 @@ $(document).ready(function() {
           });
           // Listener for mouse out
           marker.addListener('mouseout', function() {
-              if (this.status != 'selected') {
+              if (this.status !== 'selected') {
                   this.setIcon(defaultIcon);
                   this.setZIndex(0);
               }
@@ -706,7 +706,7 @@ $(document).ready(function() {
               var data = { marker_id: function() {
                 return self.id;} };
               var eventType = null;
-              if (this.status != 'selected') {
+              if (this.status !== 'selected') {
                   eventType = { type: 'mouseleave'};
               } else {
                   eventType = { type: 'mouseenter'};
@@ -716,20 +716,21 @@ $(document).ready(function() {
 
           // Create an onclick event to open the large infowindow at each marker.
           marker.addListener('click', function() {
+              var self = this;
+              var data = { marker_id: function() {
+                return self.id;} };
+              var eventType = null;
               // Deselect if already selected, and returns
-              if (this.status == 'selected'){
+              if (this.status === 'selected'){
                   this.setIcon(defaultIcon);
                   this.status = 'unselected';
-                  if (this.infowindow != null) {
+                  if (this.infowindow !== null) {
                       this.infowindow.close();
                   }
                   // Clear all distance infowindows
                   viewModel.clearDistanceInfowindows();
                   // Deselect place
-                  var self = this;
-                  var data = { marker_id: function() {
-                    return self.id;} };
-                  var eventType = { type: 'mouseleave'};
+                  eventType = { type: 'mouseleave'};
                   viewModel.highlightPlace(data, eventType);
                   return;
               }
@@ -738,23 +739,21 @@ $(document).ready(function() {
                   viewModel.markers[i].status = 'unselected';
                   viewModel.markers[i].setIcon(defaultIcon);
                   // Deselect place
-                  var self = viewModel.markers[i];
-                  var data = { marker_id: function() {
-                    return self.id;} };
-                  var eventType = { type: 'mouseleave'};
-                  viewModel.highlightPlace(data, eventType);
+                  var selfMarker = viewModel.markers[i];
+                  var dataMarker = { marker_id: function() {
+                    return selfMarker.id;} };
+                  eventType = { type: 'mouseleave'};
+                  viewModel.highlightPlace(dataMarker, eventType);
                   // And close the infowindow_distance
-                  if (viewModel.markers[i].infowindow_distance != null) {
+                  if (viewModel.markers[i].infowindow_distance !== null) {
                       viewModel.markers[i].infowindow_distance.close();
+                      // Preventing errors
                       viewModel.markers[i].setMap(viewModel.map);
                       console.log('clearing infowindows distance','i',i);
                   }
               }
               // Select place
-              var self = this;
-              var data = { marker_id: function() {
-                return self.id;} };
-              var eventType = { type: 'mouseenter'};
+              eventType = { type: 'mouseenter'};
               viewModel.highlightPlace(data, eventType);
               // Set the incon as selected
               this.setIcon(selectedIcon);
@@ -802,9 +801,9 @@ $(document).ready(function() {
             // Extend the boundaries of the map for each marker and display the marker
             for (var i = 0; i < viewModel.markers.length; i++) {
               viewModel.markers[i].setMap(viewModel.map);
-              bounds.extend(viewModel.markers[i].position)
+              bounds.extend(viewModel.markers[i].position);
             }
-            if(adjustBounds == true){
+            if(adjustBounds === true){
               console.log('adjusting bounds to ', bounds);
               viewModel.map.fitBounds(bounds);
             }
@@ -825,7 +824,7 @@ $(document).ready(function() {
       // Select a marker (trigger a click event) based on marker id
       selectMarker: function(marker_id) {
         for (var i=0; i<viewModel.markers.length; i++){
-          if(viewModel.markers[i].id == marker_id){
+          if(viewModel.markers[i].id === marker_id){
                 google.maps.event.trigger(viewModel.markers[i], 'click');
               break;
           }
@@ -839,8 +838,8 @@ $(document).ready(function() {
           var selectedIcon = this.makeMarkerIcon(viewModel.selectedMarkerColor);
 
           for (var i=0; i<viewModel.markers.length; i++){
-              if ((viewModel.markers[i].id == marker_id) && (viewModel.markers[i].status != 'selected')){
-                  if (mouseover == true) {
+              if ((viewModel.markers[i].id === marker_id) && (viewModel.markers[i].status != 'selected')){
+                  if (mouseover === true) {
                       viewModel.markers[i].setIcon(highlightedIcon);
                       //viewModel.highlightPlace(viewModel.markers[i].id, true);
                   } else {
@@ -857,10 +856,10 @@ $(document).ready(function() {
       createPlace: function(placeLat, placeLng, address, title, place_id) {
           console.log('in create place');
           var newPlace = new Place({lat: placeLat, lng: placeLng}, address,
-                                title, place_id, '', true);
+            title, place_id, '', true);
 
           // If it has a placeId, try to complete the title and address
-          if (place_id != '') {
+          if (place_id !== '') {
               console.log('in places service with place_id','place_id:', place_id);
               var service = new google.maps.places.PlacesService(viewModel.map);
               service.getDetails({
@@ -870,11 +869,11 @@ $(document).ready(function() {
                       // Set the marker address and title
                       console.log('setting the title:', result.name);
                       var address = result.formatted_address;
-                      if(address != null){
+                      if(address !== null){
                           newPlace.address = address;
                       }
                       var title = result.name;
-                      if(title != null){
+                      if(title !== null){
                           newPlace.title(title);
                       }
                       // Push the places to the array of places
@@ -895,13 +894,13 @@ $(document).ready(function() {
               // Query the Geocoder API
               geocoder.geocode({'location': {lat: placeLat, lng:placeLng}
               }, function(results, status){
-                  if (status == 'OK') {
+                  if (status === 'OK') {
                       if(results[1]) {
                         var address = results[1].formatted_address;
-                        var place_id = results[1].place_id;
+                        //var place_id = results[1].place_id;
                         console.log('address','result[1]', results[1]);
                         // Writes the address
-                        if(address!=null){
+                        if(address !== null){
                           newPlace.address = address;
                         }
                         viewModel.places.push(newPlace);
@@ -930,9 +929,9 @@ $(document).ready(function() {
 
       // Return the place linked to that marker
       getMarkerPlace: function(marker) {
-          if (marker != null) {
+          if (marker !== undefined) {
               for(var i = 0; i < viewModel.places().length; i++){
-                  if (viewModel.places()[i].marker_id() == marker.id){
+                  if (viewModel.places()[i].marker_id() === marker.id){
                       return viewModel.places()[i];
                   }
               }
@@ -955,7 +954,7 @@ $(document).ready(function() {
               var title = viewModel.places()[i].title().toLowerCase();
               var match = title.startsWith(filterLower);
 
-              if ( (match || (filterLower=='')) == false) {
+              if ( (match || (filterLower === '')) === false) {
                   // Found a match
                   viewModel.places()[i].visible(false);
                   // For setting the markers off the Map
@@ -971,7 +970,7 @@ $(document).ready(function() {
           // Set the markers with invisible places off the Map
           for (var k=0; k<matchesId.length; k++){
               for (var m=0; m<viewModel.markers.length; m++){
-                if (viewModel.markers[m].id == matchesId[k]){
+                if (viewModel.markers[m].id === matchesId[k]){
                     viewModel.markers[m].setMap(null);
                 }
               }
@@ -981,17 +980,17 @@ $(document).ready(function() {
 
       // --- MIXED: GET 'USER MARK' AND 'NEARBY PLACES MARK' SELECTED ---
 
-      // This function returns the marker that was selected (selected state == true)
+      // This function returns the marker that was selected (selected state === true)
       getSelectedMarker: function() {
           for(var i = 0; i < viewModel.markers.length; i++){
-              if (viewModel.markers[i].status == 'selected'){
+              if (viewModel.markers[i].status === 'selected'){
                   return viewModel.markers[i];
               }
           }
 
-          for(var i = 0; i < viewModel.nearPlaceMarkers.length; i++){
-              if (viewModel.nearPlaceMarkers[i].status == 'selected'){
-                  return viewModel.nearPlaceMarkers[i];
+          for(var j = 0; j < viewModel.nearPlaceMarkers.length; j++){
+              if (viewModel.nearPlaceMarkers[j].status === 'selected'){
+                  return viewModel.nearPlaceMarkers[j];
               }
           }
       },
@@ -1010,9 +1009,9 @@ $(document).ready(function() {
               }
           }
           // Close any places infowindow
-          for(var i = 0; i < viewModel.nearPlaceMarkers.length; i++){
-              if (viewModel.nearPlaceMarkers[i].infowindow) {
-                  viewModel.nearPlaceMarkers[i].infowindow.close();
+          for(var j = 0; j < viewModel.nearPlaceMarkers.length; j++){
+              if (viewModel.nearPlaceMarkers[j].infowindow) {
+                  viewModel.nearPlaceMarkers[j].infowindow.close();
               }
           }
           // Clear the infowindow content to give the streetview time to load.
@@ -1020,13 +1019,13 @@ $(document).ready(function() {
           infowindow.setContent('');
           infowindow.marker = marker;
           console.log('info website', viewModel.infoWebsite);
-          if (viewModel.infoWebsite == "GoogleStreetView") {
+          if (viewModel.infoWebsite === "GoogleStreetView") {
               this.getStreetView(marker, infowindow);
           }
-          if (viewModel.infoWebsite == "GooglePlaces") {
+          if (viewModel.infoWebsite === "GooglePlaces") {
               this.getGooglePlaces(marker, infowindow);
           }
-          if (viewModel.infoWebsite == "Wikipedia") {
+          if (viewModel.infoWebsite === "Wikipedia") {
               this.getWikipedia(marker, infowindow);
           }
           // With this is possible to close the infowindow by referencing the marker
@@ -1042,11 +1041,11 @@ $(document).ready(function() {
           // position of the streetview image, then calculate the heading, then get a
           // panorama from that and set the options
           function getStreetView(result, status) {
-              if (status == google.maps.StreetViewStatus.OK) {
+              if (status === google.maps.StreetViewStatus.OK) {
                   var nearStreetViewLocation = result.location.latLng;
                   var heading = google.maps.geometry.spherical.computeHeading(
                       nearStreetViewLocation, marker.position);
-                  var innerHTML = '<div id="pano"></div>'
+                  var innerHTML = '<div id="pano"></div>';
                   infowindow.setContent(innerHTML);
                   var panoramaOptions = {
                     position: nearStreetViewLocation,
@@ -1071,7 +1070,7 @@ $(document).ready(function() {
           var innerHTML = '';
           //console.log('marker for the get marker place', marker);
           var place = this.getMarkerPlace(marker);
-          if (place.place_id == '') {
+          if (place.place_id === '') {
               // Content of the infowindow
               innerHTML += '<p>Information from Google Places:</p>' +
                   '<p>No information.</p>';
@@ -1140,19 +1139,11 @@ $(document).ready(function() {
       getWikipedia: function(marker, infowindow) {
         console.log('show wikipedia infowindow');
         console.log('query data', queryData);
-        var placeItem = {
-          name: null,
-          phone: null,
-          address: null,
-          menuUrl: null,
-          mobileUrl: null,
-          url: null,
-          canonicalUrl: null
-        };
         var place = this.getMarkerPlace(marker);
         var queryData = place.title();
-        if (queryData == "Marker Title")
+        if (queryData === "Marker Title") {
           queryData = place.address;
+		}
         console.log('query data', queryData);
         var wikiUrl = 'https://en.wikipedia.org/w/api.php';
         $.ajax({
@@ -1177,7 +1168,7 @@ $(document).ready(function() {
                     contentString += '<li><a target="_blank" href="' + url + '">' +
                                       articleStr + '</a></li>';
                 }
-                if (articleList.length == 0) {
+                if (articleList.length === 0) {
                     contentString += '<p>No informations for: <br>' + queryData + '</p>';
                 }
                 contentString += '</ul></div>';
@@ -1186,8 +1177,9 @@ $(document).ready(function() {
             },
             timeout: 3000, //set timeout to 3 seconds
             // Alert the user on error.
-            error: function (e) {
+            error: function (error) {
                 infowindow.setContent('<h5>Wikipedia data is unavailable.</h5>');
+				console.log('Wikipedia data is unavailable, error:', error);
             }
         });
       },
@@ -1200,19 +1192,21 @@ $(document).ready(function() {
       clearDistanceInfowindows: function() {
           for (var i=0; i < viewModel.markers.length; i++){
             console.log('clearing infowindows distance');
-            if (viewModel.markers[i].infowindow_distance != null) {
-              viewModel.markers[i].infowindow_distance.close();
-              //viewModel.markers[i].setMap(viewModel.map);
+            if (viewModel.markers[i].infowindow_distance !== null) {
               console.log('clearing infowindows distance','i',i);
+              viewModel.markers[i].infowindow_distance.close();
+              // Preventing errors
+              viewModel.markers[i].setMap(viewModel.map);
             }
           }
 
-          for (var i=0; i < viewModel.nearPlaceMarkers.length; i++){
+          for (var j=0; j < viewModel.nearPlaceMarkers.length; j++){
             console.log('clearing nearby infowindows distance');
-            if (viewModel.nearPlaceMarkers[i].infowindow_distance != null) {
-              viewModel.nearPlaceMarkers[i].infowindow_distance.close();
-              //viewModel.markers[i].setMap(viewModel.map);
-              console.log('clearing nearby infowindows distance','i',i);
+            if (viewModel.nearPlaceMarkers[j].infowindow_distance !== undefined) {
+              console.log('clearing nearby infowindows distance','j',j);
+              viewModel.nearPlaceMarkers[j].infowindow_distance.close();
+              // Preventing errors
+              viewModel.nearPlaceMarkers[j].setMap(viewModel.map);
             }
           }
       },
@@ -1225,9 +1219,9 @@ $(document).ready(function() {
           // memorize the map position and zoom
           viewModel.oldCenter = viewModel.map.getCenter();
           viewModel.oldZoom = viewModel.map.getZoom();
-          if(viewModel.searchType() == "Markers"){
+          if(viewModel.searchType() === "Markers"){
               this.hideMarkers();
-          } else if(viewModel.searchType() == "Nearby") {
+          } else if(viewModel.searchType() === "Nearby") {
               this.hideNearPlaceMarkers();
           }
           //var directionsService = new google.maps.DirectionsService;
@@ -1238,10 +1232,14 @@ $(document).ready(function() {
           // Get the origin from the selected marker
           var origin = null;
           for(var i = 0; i < viewModel.markers.length; i++){
-            if (viewModel.markers[i].status == 'selected') {
+            if (viewModel.markers[i].status === 'selected') {
               origin = viewModel.markers[i].getPosition();
               break;
             }
+          }
+          // Or try to get the origin from address of text box
+          if (origin === null) {
+              origin = viewModel.searchAddress();
           }
           console.log('at display directions', 'origin', origin);
           directionsService.route({
@@ -1313,7 +1311,7 @@ $(document).ready(function() {
                   innerHTML += '<div>'+
                   '<input id=\"create-marker' + place.id + '\" type=\"button\"' +
                   ' value=\"Create Marker\"></input>'+
-                  '</div>'
+                  '</div>';
                   infowindow.setContent(innerHTML);
                   infowindow.setZIndex(ZIndex);
 
@@ -1345,22 +1343,22 @@ $(document).ready(function() {
           console.log('at marker delete');
           //Delete marker
           for(var i = 0; i < viewModel.markers.length; i++){
-              if (viewModel.markers[i].status == 'selected') {
+              if (viewModel.markers[i].status === 'selected') {
                   marker_id = viewModel.markers[i].id;
                   viewModel.markers[i].setMap(null);
-                  console.log('deleted marker i:', i)
+                  console.log('deleted marker i:', i);
                   deleted = i;
                   break;
               }
           }
           // delete from array
-          if (deleted != null){
+          if (deleted !== null){
             viewModel.markers.splice(deleted, 1);
           }
           // Delete place
           // (Uses the knockout method 'remove')
           viewModel.places.remove(function(place){
-            return place.marker_id() == marker_id})
+            return place.marker_id() === marker_id});
 
           console.log('end of place and marker deletion');
           console.log('markers', viewModel.markers);
@@ -1391,7 +1389,7 @@ $(document).ready(function() {
       /* This function takes the input value in the find nearby area text input
          locates it, and then zooms into that area. This is so that the user can
          show all listings, then decide to focus on one area of the map. */
-      zoomToArea: function(address, lat, lng) {
+      zoomToArea: function() {
           var address = viewModel.address();
           var lat = viewModel.lat();
           var lng = viewModel.lng();
@@ -1406,7 +1404,7 @@ $(document).ready(function() {
           // Initialize the geocoder.
           var geocoder = new google.maps.Geocoder();
           // Make sure the address isn't blank.
-          if (address == '') {
+          if (address === '') {
               window.alert('You must enter an area, or address.');
           } else {
             /* Geocode the address/area entered to get the center. Then, center the map
@@ -1415,7 +1413,7 @@ $(document).ready(function() {
                 { address: address,
                   componentRestrictions: {locality: viewModel.city()}
                 }, function(results, status) {
-                  if (status == google.maps.GeocoderStatus.OK) {
+                  if (status === google.maps.GeocoderStatus.OK) {
                     viewModel.map.setZoom(18);
                     viewModel.map.panTo(results[0].geometry.location);
                     console.log('at point 5');
@@ -1452,14 +1450,14 @@ $(document).ready(function() {
           //viewModel.map.oldCenter = viewModel.map.getCenter();
           //viewModel.map.oldZoom = viewModel.map.getZoom();
           // Initialize the distance matrix service.
-          var distanceMatrixService = new google.maps.DistanceMatrixService;
+          var distanceMatrixService = new google.maps.DistanceMatrixService();
           // Check to make sure the place entered isn't blank.
-          if (address == '') {
+          if (address === '') {
               window.alert('You must enter an address.');
           } else {
               // Close the infowindow of the selected marker
               for (var i = 0; i < viewModel.markers.length; i++) {
-                  if (viewModel.markers[i].status == 'selected') {
+                  if (viewModel.markers[i].status === 'selected') {
                       viewModel.markers[i].infowindow.close();
                   }
               }
@@ -1473,11 +1471,11 @@ $(document).ready(function() {
                 markerNumber: 0
               };
 
-              for (var i = 0; i < viewModel.markers.length; i++) {
-                if (viewModel.markers[i].status == 'selected') {
+              for (var j = 0; j < viewModel.markers.length; j++) {
+                if (viewModel.markers[j].status === 'selected') {
                   console.log('setting marker number');
-                  origin.place = viewModel.markers[i].getPosition();
-                  origin.markerNumber = i;
+                  origin.place = viewModel.markers[j].getPosition();
+                  origin.markerNumber = j;
                 }
               }
               // Store the destinations, based on markers
@@ -1486,31 +1484,32 @@ $(document).ready(function() {
               var destinationMarkers = [];
               // If view gets destination is markers, destinationMarkers = viewModel.markers
               // If gets nearPlaceMarkers, destinationMarkers = viewModel.nearPlaceMarkers
-              if (viewModel.searchType() == "Markers") {
+              if (viewModel.searchType() === "Markers") {
                   destinationMarkers = viewModel.markers;
-              } else if (viewModel.searchType() == "Nearby") {
+              } else if (viewModel.searchType() === "Nearby") {
                   destinationMarkers = viewModel.nearPlaceMarkers;
               }
               // Load the destinations[] based no the type of search
-              for (var i = 0; i < destinationMarkers.length; i++) {
+              for (var k = 0; k < destinationMarkers.length; k++) {
                   // Search only for markers that are not selected
-                  if (destinationMarkers[i].status != 'selected') {
-                    destinations.push({place: destinationMarkers[i]
-                      .getPosition(), markerNumber: i});
-                    console.log('destinations', destinationMarkers[i]
+                  if (destinationMarkers[k].status !== 'selected') {
+                    destinations.push({place: destinationMarkers[k]
+                      .getPosition(), markerNumber: k});
+                    console.log('destinations', destinationMarkers[k]
                       .getPosition().toString());
                   }
               }
               console.log('origin', origin, 'destinations', destinations);
-              if (destinations.length == []) {
+              if (destinations.length == 0) {
                   alert("There isn't any destination of the selected type " +
                         "(Marker/Nearby places) on the Map!");
                   return;
               }
               // Convert destinations to simple array
               var destinationsArray = [];
-              for (var i = 0; i < destinations.length; i++)
-                  destinationsArray.push(destinations[i].place);
+              for (var m = 0; m < destinations.length; m++) {
+                  destinationsArray.push(destinations[m].place);
+			        }
               /* Now that both the origins and destination are defined, get all the
                  info for the distances between them. */
               distanceMatrixService.getDistanceMatrix({
@@ -1537,7 +1536,7 @@ $(document).ready(function() {
           //viewModel.oldZoom = viewModel.map.getZoom();
 
           // get origins and destinations from response
-          var origins = response.originAddresses;
+          //var origins = response.originAddresses;
           var destinations = response.destinationAddresses;
           console.log('at display markers within time', 'destinations', destinations);
           /* Parse through the results, and get the distance and duration of each.
@@ -1595,9 +1594,9 @@ $(document).ready(function() {
               window.alert('We could not find any locations within that distance!');
           }
           // Adjust the zoom for a proper view
-          if(viewModel.searchType() == "Markers"){
+          if(viewModel.searchType() === "Markers"){
               this.showMarkers(false);
-          } else if(viewModel.searchType() == "Nearby") {
+          } else if(viewModel.searchType() === "Nearby") {
               this.showNearPlaceMarkers(false);
           }
           // Replace the initial position
@@ -1608,13 +1607,13 @@ $(document).ready(function() {
       // when they are been chosen.
       clearRoutes: function() {
           console.log('at clear routes');
-          if (viewModel.directionsRenderer.getMap() != null) {
+          if (viewModel.directionsRenderer.getMap() !== null) {
               viewModel.directionsRenderer.setMap(null);
           }
           // Adjust the zoom for a proper view
-          if(viewModel.searchType() == "Markers"){
+          if(viewModel.searchType() === "Markers"){
               this.showMarkers(true);
-          } else if(viewModel.searchType() == "Nearby") {
+          } else if(viewModel.searchType() === "Nearby") {
               this.showNearPlaceMarkers(true);
           }
           // Replace the initial position
@@ -1632,7 +1631,7 @@ $(document).ready(function() {
           var bounds = viewModel.map.getBounds();
           console.log('bounds for searching:', bounds);
           var placesService = new google.maps.places.PlacesService(viewModel.map);
-          if (places_to_search != ''){
+          if (places_to_search !== ''){
               placesService.textSearch({
                 query: places_to_search,
                 bounds: bounds,
@@ -1671,7 +1670,6 @@ $(document).ready(function() {
           // For each place discovered, create an icon and a  marker and stores
           // in the 'nearPlacesMarkers' array.
           for (var i = 0; i < results.length; i++) {
-              var self = this;
               var place = results[i];
               var icon = {
                 url: place.icon,
@@ -1698,19 +1696,14 @@ $(document).ready(function() {
               // Create a single infowindow to be used with the place details information
               // so that only one is open at once.
               var placeInfoWindow = viewModel.placeInfoWindow;
-              var defaultIcon = this.makeMarkerIcon(viewModel.defaultMarkerColor);
               // Listener
               // If a marker is clicked, do a place details search on it in the next function.
               marker.addListener('click', function() {
-                  // for (var i = 0; i < viewModel.markers.length; i++) {
-                  //     viewModel.markers[i].status = 'unselected';
-                  //     viewModel.markers[i].setIcon(defaultIcon);
-                  // }
-                  // Set the zoom panel
                   console.log('marker', this);
-                  viewModel.address(this.address);
-                  viewModel.lat(this.position.lat());
-                  viewModel.lng(this.position.lng());
+                  // Set the zoom panel
+                  //viewModel.address(this.address);
+                  //viewModel.lat(this.position.lat());
+                  //viewModel.lng(this.position.lng());
 
                   for (var i = 0; i < viewModel.nearPlaceMarkers.length; i++) {
                       viewModel.nearPlaceMarkers[i].status = 'unselected';
@@ -1718,7 +1711,7 @@ $(document).ready(function() {
                   }
                   this.status = 'selected';
                   this.setOpacity(1.0);
-                  if (placeInfoWindow.marker == this) {
+                  if (placeInfoWindow.marker === this) {
                       console.log("This infowindow already is on this marker!");
                   } else {
                     // This specific info window will have button so that the user
@@ -1764,9 +1757,9 @@ $(document).ready(function() {
             // Extend the boundaries of the map for each marker and display the marker
             for (var i = 0; i < viewModel.nearPlaceMarkers.length; i++) {
               viewModel.nearPlaceMarkers[i].setMap(viewModel.map);
-              bounds.extend(viewModel.nearPlaceMarkers[i].position)
+              bounds.extend(viewModel.nearPlaceMarkers[i].position);
             }
-            if(adjustBounds == true){
+            if(adjustBounds === true){
               viewModel.map.fitBounds(bounds);
             }
             //Limit zoom in caso of only one marker
@@ -1818,7 +1811,7 @@ $(document).ready(function() {
               viewModel.setInfoWebsite(infoWebsite);
               console.log('website for info search:', infoWebsite);
               var marker = viewModel.getSelectedMarker();
-              if (marker != null) {
+              if (marker !== undefined) {
                 // This is not an error!
                 // Sending two clicks to go to desired state
                 viewModel.selectMarker(marker.id);
@@ -1837,7 +1830,7 @@ $(document).ready(function() {
           this.$placesSearchButton.click(function() {
               var placesToSearch = $('#places-search').val();
               console.log('placesToSearch:', placesToSearch);
-              if (placesToSearch != null){
+              if (placesToSearch !== null){
                   viewModel.textSearchPlaces(placesToSearch);
               }
           });
@@ -1871,8 +1864,13 @@ $(document).ready(function() {
             case 'mouseleave':
               //console.log('mouse leave');
               var markerSelected = viewModel.getSelectedMarker();
-              if ( ((markerSelected != null) &&
-                    (markerSelected.id == data.marker_id())) == false) {
+              if (markerSelected !== undefined) {
+                  console.log('markerSelected:', markerSelected);
+                  if (markerSelected.id !== data.marker_id()) {
+                      placeListed.css('background-color', '');
+                      viewModel.highlightMarker(data.marker_id(), false);
+                  }
+              } else {
                   placeListed.css('background-color', '');
                   viewModel.highlightMarker(data.marker_id(), false);
               }
@@ -1887,14 +1885,14 @@ $(document).ready(function() {
       // helper for place title edition
       editPlaceTitle: function() {
         var marker = viewModel.getSelectedMarker();
-        if(marker!=null){
+        if(marker !== undefined){
             console.log('edit marker clicked', 'marker.id', marker.id);
             var place = viewModel.getMarkerPlace(marker);
             console.log('place obj', place);
             var old_title = place.title();
             console.log('old title', old_title);
             var title = prompt("Please enter the new place title", old_title);
-            if (title != null) {
+            if (title !== null) {
                 place.title(title);
             }
         } else {
@@ -1909,7 +1907,7 @@ $(document).ready(function() {
 
           createMarkerForInfoWindow.click(function() {
               console.log('button of google place info window fired');
-              console.log('place_obj', place_obj)
+              console.log('place_obj', place_obj);
               var lat = place_obj.geometry.location.lat();
               var lng = place_obj.geometry.location.lng();
               var address = place_obj.formatted_address;
@@ -1921,7 +1919,7 @@ $(document).ready(function() {
       },
 
       // Helper for zoom events
-      clearZoom: function (data, event){
+      clearZoom: function (data){
           console.log('in clear zoom');
           console.log('data', data);
           if ((data.address()!='')||(data.lat()!='')||(data.lng()!='')){
@@ -1934,14 +1932,15 @@ $(document).ready(function() {
 
       setZoomAddress: function() {
           console.log('in set zoom address');
-          if ((viewModel.address()!='')||(viewModel.lat()!='')||(viewModel.lng()!='')){
+          if ((viewModel.address() !== '')||(viewModel.lat() !== '')||(viewModel.lng() !== '')){
               viewModel.address('');
               viewModel.lat('');
               viewModel.lng('');
               viewModel.showMarkers(true);
           }
           var marker = viewModel.getSelectedMarker();
-          if (marker != null) {
+          if (marker !== undefined) {
+              console.log('marker:', marker);
               viewModel.address(marker.address);
               viewModel.lat(marker.position.lat());
               viewModel.lng(marker.position.lng());
@@ -1961,10 +1960,12 @@ $(document).ready(function() {
       // Helper for nearby places searching
       setSearchWithinTime: function() {
           //data[0].$searchWithinTime.val('');
+          console.log('at setSearchWithinTime');
           viewModel.searchAddress('');
           viewModel.clearDistanceInfowindows();
           var marker = viewModel.getSelectedMarker();
-          if (marker != null) {
+          console.log('marker:', marker);
+          if (marker !== undefined) {
               // var place = viewModel.getMarkerPlace(marker);
               // console.log('place', place);
               viewModel.searchAddress(marker.address);
@@ -1974,7 +1975,7 @@ $(document).ready(function() {
 
       // Helper for highlight the markers of the 'new places' search
       highlightPlaceMarker: function(marker, value){
-          if (value == true){
+          if (value === true){
               marker.setOpacity(1.0);
           } else {
                 marker.setOpacity(0.5);
@@ -1990,13 +1991,13 @@ $(document).ready(function() {
           try {
               viewModel.defaultApp = firebase.initializeApp(viewModel.firebaseConfig);
               viewModel.defaultDatabase = viewModel.defaultApp.database();
-              firebase.auth().onAuthStateChanged(firebaseUser => {
+              firebase.auth().onAuthStateChanged( function(firebaseUser) {
                   viewModel.firebaseUser = firebaseUser;
-                      if(firebaseUser != null) {
+                      if(firebaseUser !== null) {
                         console.log('firebaseUser',firebaseUser);
                         //viewModel.renderLogoutButton('show');
                         viewModel.isLogged(true);
-                        if(viewModel.firebaseUser.email != null){
+                        if(viewModel.firebaseUser.email !== null){
                             console.log('firebaseUser email', firebaseUser.email);
                             viewModel.email(firebaseUser.email);
                         }
@@ -2014,13 +2015,13 @@ $(document).ready(function() {
           try{
               var city = localStorage.city;
               console.log('loaded local storaged city:', city);
-              if(city != null){
+              if(city !== undefined){
                   viewModel.city(city);
                   console.log('loaded city', viewModel.city());
               }
               var neighborhood = localStorage.neighborhood;
               console.log('loaded local storaged neighborhood:', neighborhood);
-              if(neighborhood != null){
+              if(neighborhood !== undefined){
                   viewModel.neighborhood(neighborhood);
                   console.log('loaded neighborhood', viewModel.neighborhood());
               }
@@ -2028,15 +2029,19 @@ $(document).ready(function() {
               //alert("Places loaded");
               console.log('loaded local storaged places json:', places);
               //if(places != '[]'){
-              if(places != null){
+              if(places !== undefined){
                   var newPlaces = [];
                   newPlaces = JSON.parse(places);
                   viewModel.placesArrayToPlaces(newPlaces);
                   //viewModel.setPlacesJSON(places);
+                  // For when finished loading, the initial loading message
+                  $('#loading-browser').css("display", "inline-block");
+                  setTimeout( function() {$('#loading-browser').css("display", "none");}, 5000);
                   console.log('loaded places', viewModel.places());
-                  //alert("Loading locally stored places...");
               } else {
                   //alert("Loading default app places...");
+                  $('#loading-defaults').css("display", "inline-block");
+                  setTimeout( function() {$('#loading-defaults').css("display", "none");}, 5000);
               }
           } catch (error) {
               console.log('not possible to load from local storage: ' + error);
@@ -2066,7 +2071,7 @@ $(document).ready(function() {
           }
           // Initialize the Map part of the page and the HTML part
           try{
-              var initMapStatus = setTimeout(function(){
+              setTimeout(function(){
                   viewModel.initMap();
                   viewModel.initView();
               }, 1000);
@@ -2080,7 +2085,7 @@ $(document).ready(function() {
 
 
   // Trying to avoid sync errors. Wait 2s until script loads
-  setTimeout(function(){viewModel.init()}, 2000);
+  setTimeout( function() { viewModel.init(); }, 2000);
 
 
   ko.applyBindings(viewModel);
