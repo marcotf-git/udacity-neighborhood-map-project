@@ -192,9 +192,6 @@ $(document).ready(function() {
       mode: ko.observable('WALKING'),
       searchAddress: ko.observable(''),
 
-      // Search for nearby new places
-      placesToSearch: ko.observable(''),
-
       // Arrays for saving the nearby searched locations
       nearPlaceMarkers: [],
 
@@ -740,7 +737,7 @@ $(document).ready(function() {
                   this.id = id;
                   this.marker_id = function() {
                     return this.id;
-                  }
+                  };
               }
               // Deselect markers
               for (var i = 0; i < viewModel.markers.length; i++) {
@@ -1149,51 +1146,51 @@ $(document).ready(function() {
       },
 
       getWikipedia: function(marker, infowindow) {
-        console.log('show wikipedia infowindow');
-        console.log('query data', queryData);
-        var place = this.getMarkerPlace(marker);
-        var queryData = place.title();
-        if (queryData === "Marker Title") {
-          queryData = place.address;
-		}
-        console.log('query data', queryData);
-        var wikiUrl = 'https://en.wikipedia.org/w/api.php';
-        $.ajax({
-            url: wikiUrl,
-            data: {
-              action: 'query',
-              list: 'search',
-              srsearch: queryData,
-              format: 'json',
-              formatversion: 2
-            },
-            dataType: 'jsonp',
-            success: function (response) {
-                console.log('wikipedia response', response);
-                var articleList = response.query.search;
-                var contentString = '<div>' +
-                                    '<p>Information from Wikipedia:</p>'+
-                                    '<ul id="wikipedia-links">';
-                for (var i=0; i< articleList.length; i++) {
-                    var articleStr = articleList[i].title;
-                    var url = 'https://en.wikipedia.org/wiki/' + articleStr;
-                    contentString += '<li><a target="_blank" href="' + url + '">' +
-                                      articleStr + '</a></li>';
-                }
-                if (articleList.length === 0) {
-                    contentString += '<p>No informations for: <br>' + queryData + '</p>';
-                }
-                contentString += '</ul></div>';
-                // Update infowindow
-                infowindow.setContent(contentString);
-            },
-            timeout: 3000, //set timeout to 3 seconds
-            // Alert the user on error.
-            error: function (error) {
-                infowindow.setContent('<h5>Wikipedia data is unavailable.</h5>');
-				console.log('Wikipedia data is unavailable, error:', error);
-            }
-        });
+          console.log('show wikipedia infowindow');
+          console.log('query data', queryData);
+          var place = this.getMarkerPlace(marker);
+          var queryData = place.title();
+          if (queryData === "Marker Title") {
+            queryData = place.address;
+          }
+          console.log('query data', queryData);
+          var wikiUrl = 'https://en.wikipedia.org/w/api.php';
+          $.ajax({
+              url: wikiUrl,
+              data: {
+                action: 'query',
+                list: 'search',
+                srsearch: queryData,
+                format: 'json',
+                formatversion: 2
+              },
+              dataType: 'jsonp',
+              success: function (response) {
+                  console.log('wikipedia response', response);
+                  var articleList = response.query.search;
+                  var contentString = '<div>' +
+                                      '<p>Information from Wikipedia:</p>'+
+                                      '<ul id="wikipedia-links">';
+                  for (var i=0; i< articleList.length; i++) {
+                      var articleStr = articleList[i].title;
+                      var url = 'https://en.wikipedia.org/wiki/' + articleStr;
+                      contentString += '<li><a target="_blank" href="' + url + '">' +
+                                        articleStr + '</a></li>';
+                  }
+                  if (articleList.length === 0) {
+                      contentString += '<p>No informations for: <br>' + queryData + '</p>';
+                  }
+                  contentString += '</ul></div>';
+                  // Update infowindow
+                  infowindow.setContent(contentString);
+              },
+              timeout: 3000, //set timeout to 3 seconds
+              // Alert the user on error.
+              error: function (error) {
+                  infowindow.setContent('<h5>Wikipedia data is unavailable.</h5>');
+                  console.log('Wikipedia data is unavailable, error:', error);
+              }
+          });
       },
 
       // Close all the infowindows shown whith the distance and time data
@@ -1279,7 +1276,7 @@ $(document).ready(function() {
          and store its position on the 'places array' based upon the 'nearby
          serached places'. */
       populatePlacesInfoWindow: function(marker, infowindow) {
-          console.log('in get places details', 'marker:', marker);
+          console.log('in populate places info window', 'marker:', marker);
           // First, close all other infowinows
           for(var i = 0; i < viewModel.markers.length; i++){
               // Close any infowindow
@@ -1335,13 +1332,6 @@ $(document).ready(function() {
                   console.log('in get place details','info window content', innerHTML);
                   // With this is possible to close the infowindow by referencing the marker
                   marker.infowindow = infowindow;
-                  // Make sure the marker property is cleared if the infowindow is closed.
-                  //infowindow.addListener('closeclick', function() {
-                      //console.log('marker being unselected:', marker);
-                      //infowindow.marker = null;
-                      //marker.status = 'unselected';
-                      //marker.setOpacity(0.5);
-                  //});
                   // Open the infowindow on the correct marker.
                   infowindow.open(viewModel.map, marker);
                   // Sets the button in the infowindow
@@ -1529,7 +1519,7 @@ $(document).ready(function() {
               var destinationsArray = [];
               for (var m = 0; m < destinations.length; m++) {
                   destinationsArray.push(destinations[m].place);
-			        }
+              }
               /* Now that both the origins and destination are defined, get all the
                  info for the distances between them. */
               distanceMatrixService.getDistanceMatrix({
@@ -1545,6 +1535,19 @@ $(document).ready(function() {
                       destinationMarkers, maxDuration, mode);
                   }
               });
+          }
+      },
+
+
+      // Helper function for displayMarkersWithinTime
+      SetZIndex: function(destinationMarkers, infowindow) {
+          return function() {
+              for(var i = 0; i < destinationMarkers.length; i++){
+                  if (destinationMarkers[i].infowindow_distance) {
+                      destinationMarkers[i].infowindow_distance.setZIndex(0);
+                  }
+              }
+              infowindow.setZIndex(destinationMarkers.length);
           }
       },
 
@@ -1564,6 +1567,7 @@ $(document).ready(function() {
              nested loop. Then, make sure at least 1 result was found. */
           var atLeastOne = false;
           var results = response.rows[0].elements;
+
           for (var j = 0; j < results.length; j++) {
               var element = results[j];
               if (element.status === "OK") {
@@ -1598,17 +1602,13 @@ $(document).ready(function() {
                         .infowindow_distance = infowindow;
                       // It is for placing the window in front of others
                       google.maps.event.addListener(destinationMarkers[queried_destinations[j]
-                        .markerNumber], 'mouseover', function() {
-                          for(var i = 0; i < destinationMarkers.length; i++){
-                              if (destinationMarkers[i].infowindow_distance) {
-                                  destinationMarkers[i].infowindow_distance.setZIndex(0);
-                              }
-                          }
-                          this.infowindow_distance.setZIndex(destinationMarkers.length);
-                      });
+                        .markerNumber], 'mouseover', viewModel.SetZIndex(destinationMarkers,
+                        destinationMarkers[queried_destinations[j].markerNumber].infowindow_distance));
+
                   }
               }
           }
+
 
           if (!atLeastOne) {
               window.alert('We could not find any locations within that distance!');
@@ -1653,14 +1653,14 @@ $(document).ready(function() {
           var placesService = new google.maps.places.PlacesService(viewModel.map);
           if (places_to_search !== ''){
               placesService.textSearch({
-                query: places_to_search,
-                bounds: bounds,
+                  query: places_to_search,
+                  bounds: bounds
               }, function(results, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    viewModel.createMarkersForPlaces(results);
-                } else {
-                    window.alert('We did not find any places matching that search!');
-                }
+                  if (status === google.maps.places.PlacesServiceStatus.OK) {
+                      viewModel.createMarkersForPlaces(results);
+                  } else {
+                      window.alert('We did not find any places matching that search!');
+                  }
               });
           } else {
               window.alert('You need to enter an address for search!');
@@ -1676,13 +1676,90 @@ $(document).ready(function() {
           searchBox.setBounds(bounds);
       },
 
+
+      // Helper function for next listener
+      MarkerClicked: function(marker, infowindow) {
+          return function() {
+              console.log('at MarkerClicked','marker:', marker);
+              var defaultIcon = viewModel.makeMarkerIcon(viewModel.defaultMarkerColor);
+              // Deselect if already selected, and returns
+              if (marker.status === 'selected'){
+                  marker.setOpacity(0.5);
+                  marker.status = 'unselected';
+                  // Closing info window
+                  if (marker.infowindow !== null) {
+                      marker.infowindow.close();
+                  }
+                  // Clear all distance infowindows
+                  viewModel.clearDistanceInfowindows();
+                  return;
+              }
+              // Before selecting the marker, deselect all others
+              for (var i = 0; i < viewModel.nearPlaceMarkers.length; i++) {
+                  viewModel.nearPlaceMarkers[i].status = 'unselected';
+                  viewModel.nearPlaceMarkers[i].setOpacity(0.5);
+                  // And close the infowindow_distance
+                  // if (viewModel.nearPlaceMarkers[i].infowindow_distance !== undefined) {
+                  //     viewModel.nearPlaceMarkers[i].infowindow_distance.close();
+                  //     // Preventing errors
+                  //     viewModel.nearPlaceMarkers[i].setMap(viewModel.map);
+                  //     console.log('clearing infowindows distance','i',i);
+                  // }
+              }
+              // Deselect any place markers
+              // var selfMarker = null;
+              // function DataMarker(id) {
+              //     this.id = id;
+              //     this.marker_id = function() {
+              //       return this.id;
+              //     };
+              // }
+              // for (var j = 0; j < viewModel.markers.length; j++) {
+              //     viewModel.markers[j].status = 'unselected';
+              //     viewModel.markers[j].setIcon(defaultIcon);
+              //     var id = viewModel.markers[j].id;
+              //     var dataMarker = new DataMarker(id);
+              //     console.log('dataMarker:', dataMarker);
+              //     var eventType = { type: 'mouseleave'};
+              //     viewModel.highlightPlace(dataMarker, eventType);
+              // }
+              // Select the marker
+              console.log('marker:', marker);
+              marker.status = 'selected';
+              marker.setOpacity(1.0);
+              // Populate the infowindow
+              viewModel.populatePlacesInfoWindow(marker, infowindow);
+          }
+      },
+
+      // Helper function for mouse over next listener
+      MarkerOver: function(marker) {
+          return function() {
+              console.log('in place mouse over');
+              if(marker.status !== 'selected'){
+                  viewModel.highlightPlaceMarker(marker, true);
+                  marker.setZIndex(1.0);
+              }
+          }
+      },
+
+      // Helper function for mouse out next listener
+      MarkerOut: function(marker) {
+          return function(){
+              console.log('in place mouse out');
+              if (marker.status !== 'selected') {
+                  viewModel.highlightPlaceMarker(marker, false);
+                  marker.setZIndex(0);
+              }
+        }
+      },
+
       /* This function creates markers for each place found in places search.
          The user will be able to create its own 'user marker'
          and store its position on the 'places array' based upon the
          'nearby serached places'. */
       createMarkersForPlaces: function(results) {
           console.log('create markers for places','results',results);
-          var defaultIcon = this.makeMarkerIcon(viewModel.defaultMarkerColor);
           // Clear old places in the map
           viewModel.clearNearPlaceMarkers();
           // Clear places array
@@ -1712,78 +1789,20 @@ $(document).ready(function() {
                 place_id: place.place_id,
                 id: viewModel.lastID.toString()
               });
-              console.log('location', place.geometry.location.toJSON());
+              console.log('marker created, marker:', marker)
+              console.log('location:', place.geometry.location.toJSON());
               viewModel.lastID += 1;
+
               // Create a single infowindow to be used with the place details information
               // so that only one is open at once.
               var placeInfoWindow = viewModel.placeInfoWindow;
               // Listener
               // If a marker is clicked, do a place details search on it in the next function.
-              marker.addListener('click', function() {
-                  console.log('marker', this);
-                  // Deselect if already selected, and returns
-                  if (this.status === 'selected'){
-                      this.setOpacity(0.5);
-                      this.status = 'unselected';
-                      // Closing info window
-                      if (this.infowindow !== null) {
-                          this.infowindow.close();
-                      }
-                      // Clear all distance infowindows
-                      viewModel.clearDistanceInfowindows();
-                      return;
-                  }
-                  // Before selecting the marker, deselect all others
-                  for (var i = 0; i < viewModel.nearPlaceMarkers.length; i++) {
-                      viewModel.nearPlaceMarkers[i].status = 'unselected';
-                      viewModel.nearPlaceMarkers[i].setOpacity(0.5);
-                      // And close the infowindow_distance
-                      if (viewModel.nearPlaceMarkers[i].infowindow_distance !== undefined) {
-                          viewModel.nearPlaceMarkers[i].infowindow_distance.close();
-                          // Preventing errors
-                          viewModel.nearPlaceMarkers[i].setMap(viewModel.map);
-                          console.log('clearing infowindows distance','i',i);
-                      }
-                  }
-                  // Deselect any place markers
-                  var selfMarker = null;
-                  function DataMarker(id) {
-                      this.id = id;
-                      this.marker_id = function() {
-                        return this.id;
-                      }
-                  }
-                  for (var j = 0; j < viewModel.markers.length; j++) {
-                      viewModel.markers[j].status = 'unselected';
-                      viewModel.markers[j].setIcon(defaultIcon);
-                      var id = viewModel.markers[j].id;
-                      var dataMarker = new DataMarker(id);
-                      console.log('dataMarker:', dataMarker);
-                      eventType = { type: 'mouseleave'};
-                      viewModel.highlightPlace(dataMarker, eventType);
-                  }
-                  // Select the marker
-                  this.status = 'selected';
-                  this.setOpacity(1.0);
-                  // Populate the infowindow
-                  viewModel.populatePlacesInfoWindow(this, placeInfoWindow);
-              });
+              marker.addListener('click', viewModel.MarkerClicked(marker, placeInfoWindow));
               // listener
-              marker.addListener('mouseover', function() {
-                  console.log('in place mouse over');
-                  if(this.status !== 'selected'){
-                      viewModel.highlightPlaceMarker(this, true);
-                      this.setZIndex(1.0);
-                  }
-              });
+              marker.addListener('mouseover', viewModel.MarkerOver(marker));
               // listener
-              marker.addListener('mouseout', function() {
-                  console.log('in place mouse out');
-                  if (this.status !== 'selected') {
-                      viewModel.highlightPlaceMarker(this, false);
-                      this.setZIndex(0);
-                  }
-              });
+              marker.addListener('mouseout', viewModel.MarkerOut(marker));
               // Link marker with the info window
               marker.infowindow = placeInfoWindow;
               // Save in the array of 'nearPlaceMarkers'
@@ -1878,9 +1897,6 @@ $(document).ready(function() {
                   viewModel.textSearchPlaces(placesToSearch);
               }
           });
-
-          // For when finished loading, clear the initial oading message
-          $('#loading').css("display", "none");
 
       },
 

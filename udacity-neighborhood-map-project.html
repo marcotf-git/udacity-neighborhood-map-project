@@ -15,17 +15,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-      		type="text/javascript"></script>
+            type="text/javascript"></script>
     <!-- Knockout -->
     <script src="https://ajax.aspnetcdn.com/ajax/knockout/knockout-3.4.2.js"
-      		type="text/javascript"></script>
+            type="text/javascript"></script>
     <!-- Google APIs -->
     <script async defer
-      		src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyArfeuIwGwLrR9A2ODUm3xUph780SGJZUw&v=3">
+            src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyArfeuIwGwLrR9A2ODUm3xUph780SGJZUw&v=3">
     </script>
     <!-- Firebase -->
     <script async defer
-      		src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+            src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
   </head>
@@ -40,14 +40,14 @@
           <!-- Mobile button -->
           <div class="column right">
             <div id="hide-button" style="float:right;" data-bind="click: setMobile(true),
-              		style: { display: mobile() == true ? 'none' : 'inline-block'}">
+                 style: { display: mobile() == true ? 'none' : 'inline-block'}">
               <span class="bar"></span>
               <span class="bar"></span>
               <span class="bar"></span>
             </div>
             <div id="hidden-button" style="float:left; display:none;"
-              data-bind="click: setMobile(false), style: { display: mobile() == true ?
-              			'inline-block' : 'none'}">
+                 data-bind="click: setMobile(false), style: { display: mobile() == true ?
+                 'inline-block' : 'none'}">
               <span class="bar"></span>
               <span class="bar"></span>
               <span class="bar"></span>
@@ -56,92 +56,111 @@
         </div>
         <!-- Log in -->
         <div class="login">
-          <input id="txtEmail" data-bind="value: email" type="email" placeholder="Email">
-          <input id="txtPassword" data-bind="value: pass" type="password" placeholder="Password">
-          <input id="btnLogin"  data-bind="click: login"  type="button" value="Log in">
-          <input id="btnSignUp" data-bind="click: createUser" type="button" value="Sign up">
+          <input id="txtEmail" data-bind="value: email" type="email"
+                 placeholder="Email" />
+          <input id="txtPassword" data-bind="value: pass" type="password"
+                 placeholder="Password" />
+          <input id="btnLogin"  data-bind="click: login"  type="button"
+                 value="Log in" />
+          <input id="btnSignUp" data-bind="click: createUser" type="button"
+                 value="Sign up" />
           <span id="logged-message" data-bind="style: {display: isLogged() == true ?
             		'inline-block' : 'none'}" class="text">Logged</span>
-          <input id="btnLogout" data-bind="click: logout, style: {display: isLogged() == true ?
-            		'inline-block' : 'none'}" type="button" value="Log out">
+          <input id="btnLogout"
+                 data-bind="click: logout, style: {display: isLogged() == true ?
+                 'inline-block' : 'none'}" type="button" value="Log out" />
         </div>
-        <hr>
+        <hr />
         <!-- Places save and load -->
         <div>
-		<span class="text">Places:</span>
-		<input id="save-database" data-bind="click: saveDatabase" type="button" value="Save">
-        <input id="load-database" data-bind="click: loadDatabase" type="button" value="Load">
-        <span id="loading-defaults" class="loading" style="display: none;"><h3>Loading map, and default places because was not
-              possible to load the locally saved.</h3></span>
-        <span id="loading-browser" class="loading" style="display: none;"><h3>Loading map, and places saved locally in the
-              browser cache.</h3></span>
+          <span class="text">Places:</span>
+          <input id="save-database" data-bind="click: saveDatabase" type="button"
+                 value="Save" />
+          <input id="load-database" data-bind="click: loadDatabase" type="button"
+                 value="Load" />
+          <span id="loading-defaults" class="loading" style="display: none;">
+                <h3>Loading map, and default places because was not
+                possible to load the locally saved.</h3></span>
+          <span id="loading-browser" class="loading" style="display: none;">
+                <h3>Loading map, and places saved locally in the
+                browser cache.</h3></span>
         </div>
-        <hr>
+        <hr />
         <!-- City and neighborhood -->
         <div>
-          <input id="city" data-bind="value: city" type="text" placeholder="City, State, Country">
+          <input id="city" data-bind="value: city" type="text"
+                 placeholder="City, State, Country" />
           <input id="neighborhood" data-bind="value: neighborhood" type="text"
-				 placeholder="Neighborhood">
-          <input id="go-neighborhood" data-bind="click: function(data,event) {setMapCenter(false)}"
-				 type="button" value="Go">
+                 placeholder="Neighborhood" />
+          <input id="go-neighborhood"
+                 data-bind="click: function(data,event) {setMapCenter(false)}"
+                 type="button" value="Go" />
         </div>
-        <hr>
+        <hr />
         <!-- Add markers, show, hide, edit title -->
         <div>
           <input id="add-marker"  type="checkbox" value="add">
-          <span class="text">For adding new places (markers)</span>
-          <br>
-          <input id="show-markers" data-bind="click: function(data,event) {showMarkers(true)}"
-				 type="button" value="Show Markers">
-          <input id="hide-markers" data-bind="click: function(data,event) {hideMarkers()}"
-				 type="button" value="Hide Markers">
-          <input id="edit-marker" data-bind="click: function(data,event) {editPlaceTitle()}"
-				 type="button" value="Edit Title">
-          <br>
+          <span class="text">For adding new places (markers)</span><br />
+          <input id="show-markers"
+                 data-bind="click: function(data,event) {showMarkers(true)}"
+                 type="button" value="Show Markers" />
+          <input id="hide-markers"
+                 data-bind="click: function(data,event) {hideMarkers()}"
+                 type="button" value="Hide Markers" />
+          <input id="edit-marker"
+                 data-bind="click: function(data,event) {editPlaceTitle()}"
+                 type="button" value="Edit Title" /><br />
         </div>
         <hr>
         <!-- Places List -->
         <div>
           <span class="text">Your places list:</span>
           <input id="filter" data-bind="value: filter, event :{keyup: filterList}"
-				 type="text" placeholder="Filter">
-          <ul class="place-list" data-bind="template: {name: 'placesTemplate', foreach: places}"></ul>
+                 type="text" placeholder="Filter">
+          <ul class="place-list"
+              data-bind="template: {name: 'placesTemplate', foreach: places}"></ul>
         </div>
-        <hr>
+        <hr />
         <!-- Info windows selection -->
         <div>
           <span class="text">Explore your places list with:</span>
           <form id="infoAPI" class="text">
               <input id="googlePlaces" type="radio" name="info"
-           value="GooglePlaces" data-bind="checked: infoWebsite"> Google Places<br>
+                     value="GooglePlaces" data-bind="checked: infoWebsite" />
+                     Google Places<br>
               <input id="googleStreetView" type="radio" name="info"
-					 value="GoogleStreetView" data-bind="checked: infoWebsite"> Google Street View<br>
+                     value="GoogleStreetView" data-bind="checked: infoWebsite" />
+                     Google Street View<br>
               <input id="wikipedia" type="radio" name="info"
-					 value="Wikipedia" data-bind="checked: infoWebsite"> Wikipedia
+                     value="Wikipedia" data-bind="checked: infoWebsite" />
+                     Wikipedia
           </form>
-          <hr>
+          <hr />
           <!-- Place deletion -->
           <span class="text">Place deletion</span>
           <input id="marker-delete" data-bind="click: deletePlaceAndMarker"
-				 type="button" value="Delete">
+                 type="button" value="Delete" />
         </div>
-        <hr>
+        <hr />
         <!-- Drawing -->
         <div>
           <span class="text">Draw a shape and get the area</span>
           <input id="toggle-drawing"  data-bind="click: toggleDrawing" type="button"
-				 value="Drawing Tools">
+                 value="Drawing Tools" />
         </div>
-        <hr>
+        <hr />
         <!-- Zoom -->
         <div>
           <input id="zoom-to-area-text" data-bind="value: address, click: setZoomAddress"
-				 type="text" placeholder="Enter neighborhood or address">
-          <input id="zoom-to-area" data-bind="click: zoomToArea" type="button" value="Zoom">
-          <input id="zoom-latitude" data-bind="value: lat" type="text" placeholder="Or enter latitude">
-          <input id="zoom-longitude" data-bind="value: lng" type="text" placeholder="and longitude">
+                 type="text" placeholder="Enter neighborhood or address" />
+          <input id="zoom-to-area" data-bind="click: zoomToArea" type="button"
+                 value="Zoom" />
+          <input id="zoom-latitude" data-bind="value: lat" type="text"
+                 placeholder="Or enter latitude" />
+          <input id="zoom-longitude" data-bind="value: lng" type="text"
+                 placeholder="and longitude" />
         </div>
-        <hr>
+        <hr />
         <!-- Show Nearby Markers/Places -->
         <div>
           <div class="text" style="line-height:20px;">
@@ -149,10 +168,10 @@
             <form id="destination-search-option" style="display:inline-block;">
               <div style="display:inline-block; float:left;">
                 <input id="markers" data-bind="checked: searchType" type="radio"
-					   name="option-search" value="Markers">Markers<br></div>
+                       name="option-search" value="Markers" />Markers<br /></div>
               <div style="display:inline-block; float:left;">
                 <input id="nearby" data-bind="checked: searchType" type="radio"
-					   name="option-search" value="Nearby">Nearby places<br></div>
+                       name="option-search" value="Nearby" />Nearby places<br /></div>
             </form>
           </div>
           <span class="text">within</span>
@@ -170,22 +189,19 @@
           </select>
           <span class="text">of</span>
           <input id="search-within-time-text"
-				 data-bind="click: setSearchWithinTime, value: searchAddress"
-				 type="text" placeholder="Enter the address">
+                 data-bind="click: setSearchWithinTime, value: searchAddress"
+                 type="text" placeholder="Enter the address" />
           <input id="search-within-time" data-bind="click: searchWithinTime"
-				 type="button" value="Go">
-          <br>
+                 type="button" value="Go" /><br />
           <input id="clear-routes" data-bind="click: clearRoutes" type="button"
-				 value="Clear Routes">
-          <br>
+                 value="Clear Routes" /><br />
         </div>
-        <hr>
+        <hr />
         <!-- Search nearby new options -->
         <div>
           <span class="text">Search for nearby new places:</span>
-          <input id="places-search" data-bind="value: placesToSearch" type="text"
-				 placeholder="Ex: Pizza delivery">
-          <input id="go-places" type="button" value="Go">
+          <input id="places-search"  type="text" placeholder="Ex: Pizza delivery" />
+          <input id="go-places" type="button" value="Go" />
         </div>
       </div>
 
@@ -197,9 +213,9 @@
     <!-- JQuery template for the places array -->
     <script id="placesTemplate" type="text/html">
       <li class="place" data-bind="visible: visible,
-        event: { mouseenter: $root.highlightPlace, mouseleave: $root.highlightPlace,
-                 click: $root.highlightPlace},
-        attr: { id: marker_id }">
+          event: { mouseenter: $root.highlightPlace, mouseleave: $root.highlightPlace,
+                   click: $root.highlightPlace },
+          attr:  { id: marker_id }">
       <span class="text" data-bind="text: title"></span>
       </li>
     </script>

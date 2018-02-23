@@ -66,7 +66,7 @@ Well, there are a lot of things you can do with this single page app! 😮
 
 That's it!
 
-I hope you use the app for studying purposes, but it is worth in saying that the app can have some undiscovered error. The console logs were not commented to catch for errors.
+I hope you use the app for studying purposes, but it is worth in saying that the app can always be improved. The console logs were not commented to catch for any uncovered error.
 But, I hope you find interesting places in your neighborhood, like a sushi restaurant that I've found near my home, which I didn't know was there! 🍣
 
 
@@ -112,6 +112,8 @@ https://stackoverflow.com/questions/15551779/open-link-in-new-tab-or-window
 https://stackoverflow.com/questions/8423217/jquery-checkbox-checked-state-changed-event
 
 https://stackoverflow.com/questions/5225597/set-timeout-for-ajax-jquery
+
+https://stackoverflow.com/questions/16310423/addeventlistener-calls-the-function-without-me-even-asking-it-to
 
 
 *Firebase videos:*
