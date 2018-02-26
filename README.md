@@ -10,22 +10,20 @@ The program uses:
 
 a) **Google Maps JavaScript API** (<https://developers.google.com/maps/documentation/javascript>) for creating the map, plotting the markers, querying for routes and coordinates of places, and drawing.
 
-b) **Firebase** (<https://www.firebase.google.com>) to save the place markers in the external database, with authentication by email and password. It is necessary to sign up for an account in the app, with an exclusive password. It was the sign method selected, but there are other options at **Firebase** that were not implemented in the app at the moment.
+b) **Wikipedia's web service API** (<https://www.mediawiki.org/wiki/API:Main_page>) to get additional information about the places.
 
-c) **Knockout** (<http://knockoutjs.com>) framework to create a rich, responsive display interface, in the events that belongs mainly to the text and button elements.
+c) **Firebase** (<https://www.firebase.google.com>) to save the place markers in the external database, with authentication by email and password. It is necessary to sign up for an account in the app, with an exclusive password. It was the sign method selected, but there are other options at **Firebase** that were not implemented in the app at the moment.
 
-d) **JQuery** (<https://jquery.com/>) for making **AJAX** requests to third party servers, to obtain information about the places. Specifically, it queries the **MediaWiki API** (<https://www.mediawiki.org/wiki/API:Main_page>).
+d) **Knockout** (<http://knockoutjs.com>) framework to create a rich, responsive display interface, in the events that belongs mainly to the text and button elements.
+
+e) **JQuery** (<https://jquery.com/>) for making **AJAX** requests to third party servers, to obtain information about the places. Specifically, it queries the **MediaWiki API** (<https://www.mediawiki.org/wiki/API:Main_page>).
 
 
 # Installation
 
 * Just copy the `.html` file and the `css` and `js` folders in the same directory, and open the `.html` file with an internet browser.
 
-* For developers, it is necessary to get a **Google Maps API key** (<https://console.developers.google.com>). You may include the key as the value of the `key` parameter when loading the script in the `.html` file app:
-
- `<script async defer  src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=[YOUR_API_KEY]&v=3"></script>`
-
-For users, the app already has a `key` temporarily saved for evaluation purposes.
+* For developers, it is necessary to get a **Google Maps API key** (<https://console.developers.google.com>). You may include the key as the value of the `key` parameter when loading the script in the app.js via **AJAX**, setting the `urlGoogleAPIs` variable inside the `viewModel.init` function. For users, the app already has a `key` temporarily saved for evaluation purposes.
 
 * For developers, it is also necessary to get the **Firebase** configuration file (<https://www.firebase.google.com>) and copy and paste the `firebaseConfig` global variable inside the `viewModel`. This configuration has an `apiKey` and `projectId`, so you need to create a project at your **Firebase** account. For users, the app already has a configuration temporarily saved for evaluation purposes.
 
@@ -52,15 +50,16 @@ Well, there are a lot of things you can do with this single page app! 😮
 
 **Getting coordinates of an location**: Well, just create a marker, select it and click in the address box for `Zoom`. It will copy the address and also the geo-coordinates.
 
-**Searching for new places**: You can search for places based upon their activities, as restaurants, movie theaters, bars, etc..  Just enter the type of the place at the box below the `Search for nearby new places` and click `Go` button. It will query for places and show them on the map, with icons.
+**Searching for new places**: You can search for places based upon their activities, as restaurants, movie theaters, bars, etc..  Just enter the type of the place at the box below the `Search for nearby new places` and select the place type from the list box. It will query for places and show them on the map, with icons. If you don't select from the box list, you can type the text and click the `Go` button for a searching without the help of the searching list box.
 
-**Creating a marker for the new place**: If you click on an icon of a nearby place, like a restaurant, for example, you will see a window showing information from `Google Places`, and also in that window will have a button for automatically creating a marker for that place. After creating a marker for that place, this will be your personalized marker that will automatically have all the place information.
+**Querying more information for the new place**: If you click on an icon of a nearby place, like a restaurant, for example, you will see a window showing information from `Google Places`, `Google Street View`, or `Wikipedia`, according to the option selected by user in `option box`, that can be selected below the `Explore your places list with`.
 
-**Querying more information for the new place**: You will have your recently created marker, and also the icon marker for the new place. Just go to the text box of the `Search for nearby places` and clear the text. All the icons for the queried places will clear. Now, you will see only your place marker in that place that you recently marked. Just select the marker (it will turn 🔴), and see the information window, based upon your choice of the providers that can be selected below the `Explore your places list with`.
+**Marking a nearby place (favorite it)**: If you would like to turn that nearby searched place one of your favorite places list, just click the `Mark a nearby place` button, in the `options box`, and you will create a marker for that place. This will be your personalized marker which will automatically link to the place information. It will be shown in your places list, and will be saved together.
 
 **Editing your marker title**: Select the marker and click on the `Edit Title` button. Enter the new title in the window that will open.
 
-**Showing places that can likely be achieved in the time period**: You can choose the time period and the transport mode to achieve a place (marker) or a new searched places (icon) starting from a selected marker or address. Just select a marker (will be the place of origin), click on the address box below the `Show ⚪Markers ⚪Nearby places` title, choose the time and transport mode, and click `Go`. It will open an little information box for each marker or new places that are in the range. If you click on the `View Route` button, it will show the route! 😮 To return to the last state, click on the `Clear Routes` button on the `options box`. Now, the screen will return to that point with the little information windows chosen. You can view route for another place, or just deselect the marker (the place of origin) for clearing the information windows. If with the marker unselected, you click on the address box, it will also clear.
+**Showing routes to places**: You can choose the time period and the transport mode to achieve a place (🔵 marker) or a nearby searched places (transparent icons) starting from a selected marker, address, or even a nearby place. Just select a marker or a nearby place (will be the place of origin), click on the address box below the `Show ⚪Markers ⚪Nearby places` title to set the origin address, choose the time and transport mode, select the destination in the `Show ⚪Markers ⚪Nearby places`, and click `Go`. It will open an little information box for each marker or new places that are in the range. If you click on the `View Route` button, it will show the route! 😮
+To return to the last state, click on the `Clear Routes` button on the `options box`. Now, the screen will return to that point with the little information windows chosen. You can view route for another place, or just deselect the marker or icon (the place of origin) for clearing the information windows. If with the marker or icon unselected, you click on the address box, the address box will also clear.
 
 **Saving in an external database**: First, sign up to create an account, using your email and a password that you must create exclusively for the app. Just enter the email and password and click `Sign up` button. If it succeeds in login you in, it will show a `Logged` word in the `option box`, near the new `Logout` button. When you are logged, just click the `Save` button to save! And the `Load` to restore your places saved! This will contact the **Firebase** external database for the operations.
 
@@ -75,7 +74,7 @@ But, I hope you find interesting places in your neighborhood, like a sushi resta
 
 # Credits
 
-**These are some useful links that were queried in this project**:
+**These are some useful links, in addition to Udacity itself, that were queried in this project**:
 
 https://developers.google.com/maps/documentation/javascript/events?hl=pt-br
 
@@ -85,7 +84,13 @@ https://firebase.google.com/docs/database/web/read-and-write
 
 http://knockoutjs.com/documentation/introduction.html
 
+http://knockoutjs.com/documentation/observables.html
+
+http://knockoutjs.com/documentation/click-binding.html
+
 http://knockoutjs.com/documentation/checked-binding.html
+
+http://knockoutjs.com/documentation/value-binding.html
 
 https://www.mediawiki.org/wiki/API:Main_page
 
@@ -98,6 +103,8 @@ https://www.w3schools.com/js/js_object_constructors.asp
 http://www.javascriptkit.com/jsref/eventkeyboardmouse.shtml
 
 https://developer.mozilla.org/pt-BR/docs/Web/Guide/Events/criando_e_disparando_eventos
+
+http://api.jquery.com/jQuery.ajax/
 
 https://stackoverflow.com/questions/2730929/how-to-trigger-the-onclick-event-of-a-marker-on-a-google-maps-v3
 
@@ -115,6 +122,9 @@ https://stackoverflow.com/questions/5225597/set-timeout-for-ajax-jquery
 
 https://stackoverflow.com/questions/16310423/addeventlistener-calls-the-function-without-me-even-asking-it-to
 
+https://stackoverflow.com/questions/10126812/knockout-js-get-dom-object-associated-with-data
+
+https://stackoverflow.com/questions/17314610/knockoutjs-when-checked-data-binding-call-function
 
 *Firebase videos:*
 
@@ -125,3 +135,5 @@ https://youtu.be/k1D0_wFlXgo
 https://youtu.be/sKFLI5FOOHs
 
 https://youtu.be/-OKrloDzGpU
+
+Thank you!

@@ -187,7 +187,7 @@ $(document).ready(function() {
 
       // Show nearby markers/places vars
       searchType: ko.observable("Markers"),
-      //searchPlaces: ko.observable(false),
+      searchPlaces: ko.observable(''),
       maxDuration: ko.observable("10"),
       mode: ko.observable('WALKING'),
       searchAddress: ko.observable(''),
@@ -233,6 +233,8 @@ $(document).ready(function() {
       placeInfoWindow: null,
       drawingManager: null,
       directionsRenderer: null,
+      searchBox: null,
+
 
 
       /* The functions are grouped in same order as the DOM functionalities.
@@ -247,9 +249,9 @@ $(document).ready(function() {
           var email = viewModel.email();
           var pass = viewModel.pass();
           viewModel.pass('');
-          auth = firebase.auth();
-          promise = auth.signInWithEmailAndPassword(email, pass);
-          promise.catch(function(error) {
+          viewModel.auth = firebase.auth();
+          viewModel.promise = viewModel.auth.signInWithEmailAndPassword(email, pass);
+          viewModel.promise.catch(function(error) {
               console.log(error, error.message);
               alert("Error: " + error.code);
               if (error.code === 'auth/user-not-found') {
@@ -272,9 +274,9 @@ $(document).ready(function() {
         var email = viewModel.email();
         var pass = viewModel.pass();
         viewModel.pass('');
-        auth = firebase.auth();
-        promise = auth.createUserWithEmailAndPassword(email, pass);
-        promise.catch(function(error) {
+        viewModel.auth = firebase.auth();
+        viewModel.promise = viewModel.auth.createUserWithEmailAndPassword(email, pass);
+        viewModel.promise.catch(function(error) {
           console.log(error, error.message);
           alert("Error in sign up: " + error.message);
         });
@@ -283,6 +285,7 @@ $(document).ready(function() {
       logout: function() {
           console.log('at log out');
           var status = firebase.auth().signOut();
+          console.log('status:', status);
       },
 
 
@@ -490,6 +493,7 @@ $(document).ready(function() {
           }
       },
 
+      // This function loads a places array into the viewModel.places
       placesArrayToPlaces: function(places){
           viewModel.places.removeAll();
           // Construct a JSON object with the places
@@ -497,18 +501,18 @@ $(document).ready(function() {
           var newPlacesArray = places;
           //console.log('newPlaces', newPlacesArray);
           for (var i=0; i<newPlacesArray.length; i++){
-            var newPlace = newPlacesArray[i];
-            console.log("new place", newPlace);
-            var placeObj = new Place(
-              newPlace.position,
-              newPlace.address,
-              newPlace.title,
-              newPlace.place_id,
-              newPlace.marker_id,
-              newPlace.visible
-            );
-            console.log('place obj', placeObj);
-            viewModel.places.push(placeObj);
+              var newPlace = newPlacesArray[i];
+              console.log("new place", newPlace);
+              var placeObj = new Place(
+                  newPlace.position,
+                  newPlace.address,
+                  newPlace.title,
+                  newPlace.place_id,
+                  newPlace.marker_id,
+                  newPlace.visible
+              );
+              console.log('place obj', placeObj);
+              viewModel.places.push(placeObj);
           }
       },
 
@@ -607,6 +611,15 @@ $(document).ready(function() {
             });
             infowindow.open(viewModel.map);
         });
+        // Configure listener for the Search Box
+        viewModel.searchBox.addListener('places_changed', function() {
+            var selected = this.getPlaces();
+            console.log('selected:', selected);
+            // Create the array with the markers
+            viewModel.createMarkersForNearbyPlaces(selected);
+            // Adjust the map
+            viewModel.showNearPlaceMarkers(false);
+        });
       },
 
       /* Query for the map center, based upon the neighborhood, and position
@@ -662,6 +675,7 @@ $(document).ready(function() {
           // Create a marker (for Map) per location, and put into markers array.
           var marker = new google.maps.Marker({
               position: place.position,
+              title: place.title(),
               address: place.address,
               animation: google.maps.Animation.DROP,
               icon: defaultIcon,
@@ -732,7 +746,6 @@ $(document).ready(function() {
                   return;
               }
               // Before selecting the marker, deselect all others
-              var selfMarker = null;
               function DataMarker(id) {
                   this.id = id;
                   this.marker_id = function() {
@@ -844,10 +857,9 @@ $(document).ready(function() {
           // Set marker listeners
           var defaultIcon = this.makeMarkerIcon(viewModel.defaultMarkerColor);
           var highlightedIcon = this.makeMarkerIcon(viewModel.highlightedMarkerColor);
-          var selectedIcon = this.makeMarkerIcon(viewModel.selectedMarkerColor);
 
           for (var i=0; i<viewModel.markers.length; i++){
-              if ((viewModel.markers[i].id === marker_id) && (viewModel.markers[i].status != 'selected')){
+              if ((viewModel.markers[i].id === marker_id) && (viewModel.markers[i].status !== 'selected')){
                   if (mouseover === true) {
                       viewModel.markers[i].setIcon(highlightedIcon);
                       //viewModel.highlightPlace(viewModel.markers[i].id, true);
@@ -948,17 +960,15 @@ $(document).ready(function() {
       },
 
       // This function will filter the lit of places, based on the "filter" word
-      filterList: function(data, event) {
+      filterList: function() {
           // Finds the places that begins with the word
           // If the word is blank, select all
           // Set the visibility of the others to false
           console.log('at filter list');
-          console.log('data', data);
-          console.log('event', event);
-          var filter = data.$filterList[0].value;
-          console.log('filter:', filter);
+          var knockoutFilter = viewModel.filter();
+          console.log('knockoutFilter:', knockoutFilter);
           var matchesId = [];
-          var filterLower = filter.toLowerCase();
+          var filterLower = knockoutFilter.toLowerCase();
           for (var i=0; i<viewModel.places().length; i++){
               var title = viewModel.places()[i].title().toLowerCase();
               var match = title.startsWith(filterLower);
@@ -1009,7 +1019,7 @@ $(document).ready(function() {
 
       // This function will populate the window that opens when a 'user marker' is clicked
       populateInfoWindow: function(marker) {
-          console.log('in populate info window');
+          console.log('in populate info window, marker: ', marker);
           // First, close all other infowinows
           for(var i = 0; i < viewModel.markers.length; i++){
               // Close any infowindow
@@ -1023,11 +1033,14 @@ $(document).ready(function() {
                   viewModel.nearPlaceMarkers[j].infowindow.close();
               }
           }
-          // Clear the infowindow content to give the streetview time to load.
+          // Clear the infowindow content
           var infowindow = viewModel.largeInfowindow;
+          console.log('infowindow:', infowindow);
           infowindow.setContent('');
+          // Attach the marker reference
           infowindow.marker = marker;
-          console.log('info website', viewModel.infoWebsite);
+          // Select the source according the user selection
+          console.log('info website', viewModel.infoWebsite());
           if (viewModel.infoWebsite() === "GoogleStreetView") {
               this.getStreetView(marker, infowindow);
           }
@@ -1078,8 +1091,8 @@ $(document).ready(function() {
       getGooglePlaces: function (marker, infowindow) {
           var innerHTML = '';
           //console.log('marker for the get marker place', marker);
-          var place = this.getMarkerPlace(marker);
-          if (place.place_id === '') {
+          //var place = this.getMarkerPlace(marker);
+          if (marker.place_id === '') {
               // Content of the infowindow
               innerHTML += '<p>Information from Google Places:</p>' +
                   '<p>No information.</p>';
@@ -1088,13 +1101,14 @@ $(document).ready(function() {
           } else {
               var service = new google.maps.places.PlacesService(viewModel.map);
               service.getDetails({
-                    placeId: place.place_id
+                    placeId: marker.place_id
               }, function(result, status) {
                   console.log('result from google place', result);
                   if (status === google.maps.places.PlacesServiceStatus.OK) {
                       // Set the marker property on this infowindow so it isn't created again.
                       infowindow.marker = marker;
                       innerHTML += '<div style="margin: 12px 12px 12px 12px;">';
+                      innerHTML += '<p>Information from Google Places:</p>';
                       innerHTML += '<div>';
                       if (result.name) {
                         innerHTML += '<strong>' + result.name + '</strong>';
@@ -1146,12 +1160,12 @@ $(document).ready(function() {
       },
 
       getWikipedia: function(marker, infowindow) {
-          console.log('show wikipedia infowindow');
-          console.log('query data', queryData);
-          var place = this.getMarkerPlace(marker);
-          var queryData = place.title();
+          console.log('show wikipedia infowindow, marker:', marker);
+          //var place = this.getMarkerPlace(marker);
+          //var queryData = place.title();
+          var queryData = marker.title;
           if (queryData === "Marker Title") {
-            queryData = place.address;
+            queryData = marker.address;
           }
           console.log('query data', queryData);
           var wikiUrl = 'https://en.wikipedia.org/w/api.php';
@@ -1192,6 +1206,7 @@ $(document).ready(function() {
               }
           });
       },
+
 
       // Close all the infowindows shown whith the distance and time data
       clearDistanceInfowindows: function() {
@@ -1270,76 +1285,16 @@ $(document).ready(function() {
           });
       },
 
-      /* This is executed when a 'nearby place searched marker' is selected,
-         indicating the user wants more details about that place.
-         Make marker listener so that the user can create its own 'user marker'
-         and store its position on the 'places array' based upon the 'nearby
-         serached places'. */
-      populatePlacesInfoWindow: function(marker, infowindow) {
-          console.log('in populate places info window', 'marker:', marker);
-          // First, close all other infowinows
-          for(var i = 0; i < viewModel.markers.length; i++){
-              // Close any infowindow
-              if (viewModel.markers[i].infowindow) {
-                  viewModel.markers[i].infowindow.close();
-              }
+      /* This function is called by knockout when the infoWebsite changes.
+         It will update the infoWindow if already opened.
+         This is setted up by subscribing to observable infoWebsite. */
+      setNewInfoWindow: function(value) {
+          console.log('in newInfoWindow, value:', value);
+          var marker = viewModel.largeInfowindow.marker;
+          console.log('marker:', marker);
+          if (marker !== undefined) {
+              viewModel.populateInfoWindow(marker);
           }
-          // Close any places infowindow
-          for(var j = 0; j < viewModel.nearPlaceMarkers.length; j++){
-              if (viewModel.nearPlaceMarkers[j].infowindow) {
-                  viewModel.nearPlaceMarkers[j].infowindow.close();
-              }
-          }
-          var service = new google.maps.places.PlacesService(viewModel.map);
-          service.getDetails({
-                placeId: marker.place_id
-            }, function(place, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                  // Set the marker property on this infowindow so it isn't created again.
-                  infowindow.marker = marker;
-                  var innerHTML = '<div>';
-                  if (place.name) {
-                    innerHTML += '<strong>' + place.name + '</strong>';
-                  }
-                  if (place.formatted_address) {
-                    innerHTML += '<br>' + place.formatted_address;
-                  }
-                  if (place.formatted_phone_number) {
-                    innerHTML += '<br>' + place.formatted_phone_number;
-                  }
-                  if (place.opening_hours) {
-                    innerHTML += '<br><br><strong>Hours:</strong><br>' +
-                        place.opening_hours.weekday_text[0] + '<br>' +
-                        place.opening_hours.weekday_text[1] + '<br>' +
-                        place.opening_hours.weekday_text[2] + '<br>' +
-                        place.opening_hours.weekday_text[3] + '<br>' +
-                        place.opening_hours.weekday_text[4] + '<br>' +
-                        place.opening_hours.weekday_text[5] + '<br>' +
-                        place.opening_hours.weekday_text[6];
-                  }
-                  if (place.photos) {
-                    innerHTML += '<br><br><img src="' + place.photos[0].getUrl(
-                        {maxHeight: 100, maxWidth: 200}) + '">';
-                  }
-                  innerHTML += '</div>';
-                  // add button for create marker
-                  innerHTML += '<div>'+
-                  '<input id=\"create-marker' + place.id + '\" type=\"button\"' +
-                  ' value=\"Create Marker\"></input>'+
-                  '</div>';
-                  infowindow.setContent(innerHTML);
-                  //infowindow.setZIndex(ZIndex);
-                  console.log('in get place details','info window content', innerHTML);
-                  // With this is possible to close the infowindow by referencing the marker
-                  marker.infowindow = infowindow;
-                  // Open the infowindow on the correct marker.
-                  infowindow.open(viewModel.map, marker);
-                  // Sets the button in the infowindow
-                  viewModel.renderPlaceInfoWindow(place);
-                } else {
-                  window.alert('Places details request failed due to ' + status);
-                }
-          });
       },
 
 
@@ -1449,10 +1404,6 @@ $(document).ready(function() {
          It can search in markers[] or in nearPlaceMarkers[], depending upon
          the user selection. */
       searchWithinTime: function(address, mode, maxDuration) {
-          //     console.log('maxDuration', viewModel.maxDuration());
-          //     console.log('mode', viewModel.mode());
-          //     console.log('address', viewModel.searchAddress());
-          //     console.log('search type', viewModel.searchType());
           address = viewModel.searchAddress();
           mode = viewModel.mode();
           maxDuration = viewModel.maxDuration();
@@ -1538,7 +1489,6 @@ $(document).ready(function() {
           }
       },
 
-
       // Helper function for displayMarkersWithinTime
       SetZIndex: function(destinationMarkers, infowindow) {
           return function() {
@@ -1623,8 +1573,9 @@ $(document).ready(function() {
           //viewModel.map.setZoom(viewModel.oldZoom);
           //viewModel.map.setCenter(viewModel.oldCenter);
       },
-      // This function clears the routes in the map, and also the infowindows
-      // when they are been chosen.
+
+      /* This function clears the routes in the map, and also the infowindows
+         when they are been chosen. */
       clearRoutes: function() {
           console.log('at clear routes');
           if (viewModel.directionsRenderer.getMap() !== null) {
@@ -1644,46 +1595,28 @@ $(document).ready(function() {
 
       // --- NEARBY SEARCHING NEW PLACES ---
 
-      /* This function firest when the user select "go" on the places search.
-         It will do a nearby search using the entered query string or place.*/
-      textSearchPlaces: function(places_to_search) {
-          console.log('In text search places', 'places to search', places_to_search);
-          var bounds = viewModel.map.getBounds();
-          console.log('bounds for searching:', bounds);
-          var placesService = new google.maps.places.PlacesService(viewModel.map);
-          if (places_to_search !== ''){
-              placesService.textSearch({
-                  query: places_to_search,
-                  bounds: bounds
-              }, function(results, status) {
-                  if (status === google.maps.places.PlacesServiceStatus.OK) {
-                      viewModel.createMarkersForPlaces(results);
-                  } else {
-                      window.alert('We did not find any places matching that search!');
-                  }
-              });
-          } else {
-              window.alert('You need to enter an address for search!');
+      /* Helper function for the next setSearchBox
+         This function clears the array of the nearby searched places */
+      clearNearPlaceMarkers: function() {
+          console.log('at clear near places markers');
+          for (var i=0; i<viewModel.nearPlaceMarkers.length; i++){
+              viewModel.nearPlaceMarkers[i].setMap(null);
           }
+          viewModel.nearPlaceMarkers = [];
+          console.log('place markers', viewModel.nearPlaceMarkers);
       },
 
-      // Create a searchbox in order to execute a places search
-      setSearchBox: function (search_Box) {
-          var searchBox = new google.maps.places.SearchBox(search_Box);
-          // Bias the searchbox to within the bounds of the map.
-          var bounds = viewModel.map.getBounds();
-          console.log('search box bounds for searching:', bounds);
-          searchBox.setBounds(bounds);
-      },
-
-
-      // Helper function for next listener
-      MarkerClicked: function(marker, infowindow) {
+      // Helper function for the click next listener.
+      NearbyMarkerClicked: function(marker) {
           return function() {
-              console.log('at MarkerClicked','marker:', marker);
-              var defaultIcon = viewModel.makeMarkerIcon(viewModel.defaultMarkerColor);
+              console.log('at nearby places NearbyMarkerClicked, marker:', marker);
               // Deselect if already selected, and returns
               if (marker.status === 'selected'){
+                  // If the option to create user marker was selected, creates a marker.
+                  //if (document.getElementById('add-marker').checked === true) {
+                  //    viewModel.createUserMarkerForNearbyPlace();
+                  //}
+                  // Deselect the nearby place marker
                   marker.setOpacity(0.5);
                   marker.status = 'unselected';
                   // Closing info window
@@ -1698,44 +1631,26 @@ $(document).ready(function() {
               for (var i = 0; i < viewModel.nearPlaceMarkers.length; i++) {
                   viewModel.nearPlaceMarkers[i].status = 'unselected';
                   viewModel.nearPlaceMarkers[i].setOpacity(0.5);
-                  // And close the infowindow_distance
-                  // if (viewModel.nearPlaceMarkers[i].infowindow_distance !== undefined) {
-                  //     viewModel.nearPlaceMarkers[i].infowindow_distance.close();
-                  //     // Preventing errors
-                  //     viewModel.nearPlaceMarkers[i].setMap(viewModel.map);
-                  //     console.log('clearing infowindows distance','i',i);
-                  // }
               }
-              // Deselect any place markers
-              // var selfMarker = null;
-              // function DataMarker(id) {
-              //     this.id = id;
-              //     this.marker_id = function() {
-              //       return this.id;
-              //     };
-              // }
-              // for (var j = 0; j < viewModel.markers.length; j++) {
-              //     viewModel.markers[j].status = 'unselected';
-              //     viewModel.markers[j].setIcon(defaultIcon);
-              //     var id = viewModel.markers[j].id;
-              //     var dataMarker = new DataMarker(id);
-              //     console.log('dataMarker:', dataMarker);
-              //     var eventType = { type: 'mouseleave'};
-              //     viewModel.highlightPlace(dataMarker, eventType);
-              // }
               // Select the marker
               console.log('marker:', marker);
               marker.status = 'selected';
               marker.setOpacity(1.0);
-              // Populate the infowindow
-              viewModel.populatePlacesInfoWindow(marker, infowindow);
+
+              // If the option to create marker was selected, creates a marker.
+              // If not, just shows the infoWindow.
+              //if (document.getElementById('add-marker').checked === true) {
+              //    viewModel.createUserMarkerForNearbyPlace();
+              //} else {
+              		viewModel.populateInfoWindow(marker);
+              //}
           };
       },
 
-      // Helper function for mouse over next listener
-      MarkerOver: function(marker) {
+      // Helper function for mouse over next listener.
+      NearbyMarkerOver: function(marker) {
           return function() {
-              console.log('in place mouse over');
+              console.log('in NearbyMarkerOver');
               if(marker.status !== 'selected'){
                   viewModel.highlightPlaceMarker(marker, true);
                   marker.setZIndex(1.0);
@@ -1743,10 +1658,10 @@ $(document).ready(function() {
           };
       },
 
-      // Helper function for mouse out next listener
-      MarkerOut: function(marker) {
+      // Helper function for mouse out next listener.
+      NearbyMarkerOut: function(marker) {
           return function(){
-              console.log('in place mouse out');
+              console.log('in NearbyMarkerOut');
               if (marker.status !== 'selected') {
                   viewModel.highlightPlaceMarker(marker, false);
                   marker.setZIndex(0);
@@ -1754,17 +1669,11 @@ $(document).ready(function() {
         };
       },
 
-      /* This function creates markers for each place found in places search.
-         The user will be able to create its own 'user marker'
-         and store its position on the 'places array' based upon the
-         'nearby serached places'. */
-      createMarkersForPlaces: function(results) {
+      /* Helper function for the next setSearchBox.
+         This function creates markers for each place found in nearby places search. */
+      createMarkersForNearbyPlaces: function(results) {
           console.log('create markers for places','results',results);
-          // Clear old places in the map
-          viewModel.clearNearPlaceMarkers();
-          // Clear places array
-          //viewModel.nearPlaceMarkers = [];
-          var bounds = viewModel.map.getBounds();
+          //var bounds = viewModel.map.getBounds();
           // For each place discovered, create an icon and a  marker and stores
           // in the 'nearPlacesMarkers' array.
           for (var i = 0; i < results.length; i++) {
@@ -1792,29 +1701,31 @@ $(document).ready(function() {
               console.log('marker created, marker:', marker);
               console.log('location:', place.geometry.location.toJSON());
               viewModel.lastID += 1;
-
               // Create a single infowindow to be used with the place details information
               // so that only one is open at once.
               var placeInfoWindow = viewModel.placeInfoWindow;
-              // Listener
-              // If a marker is clicked, do a place details search on it in the next function.
-              marker.addListener('click', viewModel.MarkerClicked(marker, placeInfoWindow));
-              // listener
-              marker.addListener('mouseover', viewModel.MarkerOver(marker));
-              // listener
-              marker.addListener('mouseout', viewModel.MarkerOut(marker));
               // Link marker with the info window
               marker.infowindow = placeInfoWindow;
+              // Listeners
+              // If a marker is clicked, do a place details search on it in the next function.
+              marker.addListener('click', viewModel.NearbyMarkerClicked(marker));
+              // listener
+              marker.addListener('mouseover', viewModel.NearbyMarkerOver(marker));
+              // listener
+              marker.addListener('mouseout', viewModel.NearbyMarkerOut(marker));
               // Save in the array of 'nearPlaceMarkers'
               viewModel.nearPlaceMarkers.push(marker);
               // Writes the marker to the map
               marker.setMap(viewModel.map);
+
               console.log('create marker for nearby place, marker:', marker);
           }
           //viewModel.map.fitBounds(bounds);
       },
 
-      // This function will loop through the near places markers array and display them all.
+      /* Helper function for the next setSearchBox.
+         This function will loop through the near places markers array and display
+         them all. */
       showNearPlaceMarkers: function(adjustBounds) {
           console.log('in show markers', 'markers', viewModel.nearPlaceMarkers);
           if (viewModel.nearPlaceMarkers.length > 0) {
@@ -1834,82 +1745,90 @@ $(document).ready(function() {
           }
       },
 
-      // This function will loop through the listings and hide them all.
+      /* This function sets the SearchBox and is called via knockout bind, when the user
+         clicks on the 'search for nearby new places' text box.
+         When the user selects a place, it automatically (via listener) creates the array
+         of nearby places. */
+      setSearchBox: function() {
+          console.log('in setSearchBox');
+          viewModel.searchPlaces('');
+          // Clear the nearPlaceMarkers array before the search
+          viewModel.clearNearPlaceMarkers();
+          var bounds = viewModel.map.getBounds();
+          viewModel.searchBox.setBounds(bounds);
+      },
+
+      /* This function fires when the user selects "go" on the places search.
+         It will do a nearby search using the entered query string or place.*/
+      goSearchPlaces: function() {
+          console.log('in goSearchPlaces');
+          var placesToSearch = viewModel.searchPlaces();
+          console.log('placesToSearch:', placesToSearch);
+          var bounds = viewModel.map.getBounds();
+          console.log('bounds for searching:', bounds);
+          var placesService = new google.maps.places.PlacesService(viewModel.map);
+          if (placesToSearch !== ''){
+              placesService.textSearch({
+                  query: placesToSearch,
+                  bounds: bounds
+              }, function(results, status) {
+                  if (status === google.maps.places.PlacesServiceStatus.OK) {
+                      viewModel.createMarkersForNearbyPlaces(results);
+                      // Adjust the map
+                      viewModel.showNearPlaceMarkers(false);
+                  } else {
+                      window.alert('We did not find any places matching that search!');
+                  }
+              });
+          } else {
+              window.alert('You need to enter an address for search!');
+          }
+      },
+
+      /* Helper for displayDirections.
+         This function will loop through the listings and hide them all.
+         It is used by the displayDirections. */
       hideNearPlaceMarkers: function() {
           for (var i = 0; i < viewModel.nearPlaceMarkers.length; i++) {
             viewModel.nearPlaceMarkers[i].setMap(null);
           }
       },
 
-      // Clear the visibility of the nearby searched places
-      clearNearPlaceMarkers: function() {
-          console.log('at clear near places markers');
-          for (var i=0; i<viewModel.nearPlaceMarkers.length; i++){
-              viewModel.nearPlaceMarkers[i].setMap(null);
+      /* This function is called via knockout bind on the 'Mark a nearby place' button,
+         and creates a user marker on the selected nearby place */
+      createUserMarkerForNearbyPlace: function() {
+          console.log('in createUserMarkerForNearbyPlace');
+          var marker = '';
+          for (var j = 0; j < viewModel.nearPlaceMarkers.length; j++) {
+              if(viewModel.nearPlaceMarkers[j].status === 'selected'){
+                  marker = viewModel.nearPlaceMarkers[j];
+                  break;
+              }
           }
-          viewModel.nearPlaceMarkers = [];
-          console.log('place markers', viewModel.nearPlaceMarkers);
-      },
-
-
-      // --- Some events handled directly by JQuery ---
-
-      initView: function() {
-
-          console.log('at view init');
-
-          // This var is used by knockout and the filterList function
-          this.$filterList = $('#filter');
-
-          // This is necessary for the infowindow provider
-          // this has an action that belongs to DOM and the Map at the same time
-          this.$infoAPI = $('#infoAPI');
-
-          // This is necessary for the 'new places' search events
-          this.$placesSearch = $('#places-search');
-          this.$placesSearchButton = $('#go-places');
-
-          // This has an action that belongs to DOM and the Map.
-          this.$infoAPI.click(function() {
-              //var infoWebsite = document.querySelector('input[name="info"]:checked').value;
-              console.log('website for info search:', viewModel.infoWebsite());
-              var marker = viewModel.getSelectedMarker();
-              if (marker !== undefined) {
-                // This is not an error!
-                // Sending two clicks to go to desired state
-                viewModel.selectMarker(marker.id);
-                viewModel.selectMarker(marker.id);
-              }
-          });
-
-          // 'New places' search event. Call a map event for the search box.
-          this.$placesSearch.click(function() {
-              $(this).val('');
-              viewModel.clearNearPlaceMarkers();
-              viewModel.setSearchBox(this);
-          });
-
-          // 'New places' search button event
-          this.$placesSearchButton.click(function() {
-              var placesToSearch = $('#places-search').val();
-              console.log('placesToSearch:', placesToSearch);
-              if (placesToSearch !== null){
-                  viewModel.textSearchPlaces(placesToSearch);
-              }
-          });
-
+          if (marker === ''){
+              alert("Please, select a nearby place first! Click on it!");
+              return;
+          }
+          console.log('marker:', marker);
+          var lat = marker.position.lat();
+          var lng = marker.position.lng();
+          var address = marker.address;
+          var title = marker.title;
+          var place_id = marker.place_id;
+          // Create a place and put in the user's place array and create the marker
+          viewModel.createPlace(lat, lng, address, title, place_id);
       },
 
 
       // --- HELPER FUNCTIONS FOR RENDERING THE DOM AND THE MAP ---
 
-      // Control the screen appearance
+      // Control the screen appearance.
       setMobile: function(data) {
           viewModel.mobile(data);
           console.log('mobile:', viewModel.mobile());
       },
 
-      // Helper for highlight the place on the places list and markers on the map
+      // Helper for highlight the place on the places list and markers on the map.
       highlightPlace: function(data, event) {
           console.log('at view highlightPlace, data:', data);
           //console.log('at view highlight event, event type:', event.type);
@@ -1942,7 +1861,7 @@ $(document).ready(function() {
           }
       },
 
-      // helper for place title edition
+      // Helper for place title edition.
       editPlaceTitle: function() {
         var marker = viewModel.getSelectedMarker();
         if(marker !== undefined){
@@ -1960,25 +1879,7 @@ $(document).ready(function() {
         }
       },
 
-      // Helper for places infowindows
-      renderPlaceInfoWindow: function(place_obj) {
-          console.log('in render place info window', 'place id', place_obj.id);
-          var createMarkerForInfoWindow = $('#create-marker' + place_obj.id);
-
-          createMarkerForInfoWindow.click(function() {
-              console.log('button of google place info window fired');
-              console.log('place_obj', place_obj);
-              var lat = place_obj.geometry.location.lat();
-              var lng = place_obj.geometry.location.lng();
-              var address = place_obj.formatted_address;
-              var title = place_obj.name;
-              var place_id = place_obj.place_id;
-
-              viewModel.createPlace(lat, lng, address, title, place_id);
-          });
-      },
-
-      // Helper for zoom events
+      // Helper for zoom events.
       clearZoom: function (data){
           console.log('in clear zoom');
           console.log('data', data);
@@ -2007,7 +1908,7 @@ $(document).ready(function() {
           }
       },
 
-      // Helper for route infowindows
+      // Helper for route infowindows.
       renderRouteInfoWindow: function(destination_number, destination, mode) {
           console.log('in render route info window');
           var buttonDistanceInfoWindow = $('#destination' + destination_number.toString());
@@ -2017,23 +1918,20 @@ $(document).ready(function() {
           });
       },
 
-      // Helper for nearby places searching
+      // Helper for nearby places searching.
       setSearchWithinTime: function() {
-          //data[0].$searchWithinTime.val('');
           console.log('at setSearchWithinTime');
           viewModel.searchAddress('');
           viewModel.clearDistanceInfowindows();
           var marker = viewModel.getSelectedMarker();
           console.log('marker:', marker);
           if (marker !== undefined) {
-              // var place = viewModel.getMarkerPlace(marker);
-              // console.log('place', place);
               viewModel.searchAddress(marker.address);
               console.log('search address', viewModel.searchAddress());
           }
       },
 
-      // Helper for highlight the markers of the 'new places' search
+      // Helper for highlight the markers of the 'new places' search.
       highlightPlaceMarker: function(marker, value){
           if (value === true){
               marker.setOpacity(1.0);
@@ -2047,30 +1945,38 @@ $(document).ready(function() {
 
       init: function() {
           console.log('in octopus', 'init');
+          var urlFirebase = "https://www.gstatic.com/firebasejs/4.9.1/firebase.js";
           // Init Firebase
-          try {
-              viewModel.defaultApp = firebase.initializeApp(viewModel.firebaseConfig);
-              viewModel.defaultDatabase = viewModel.defaultApp.database();
-              firebase.auth().onAuthStateChanged( function(firebaseUser) {
-                  viewModel.firebaseUser = firebaseUser;
-                      if(firebaseUser !== null) {
-                        console.log('firebaseUser',firebaseUser);
-                        //viewModel.renderLogoutButton('show');
-                        viewModel.isLogged(true);
-                        if(viewModel.firebaseUser.email !== null){
-                            console.log('firebaseUser email', firebaseUser.email);
-                            viewModel.email(firebaseUser.email);
-                        }
-                      } else {
-                        console.log('not logged in');
-                        viewModel.isLogged(false);
-                        console.log('firebaseUser',firebaseUser);
-                      }
-              });
-          }
-          catch(error) {
-              alert("Loading Firebase result an error: " + error);
-          }
+          $.getScript(urlFirebase)
+              .done(function(){
+                  try{
+                      viewModel.defaultApp = firebase.initializeApp(viewModel.firebaseConfig);
+                      viewModel.defaultDatabase = viewModel.defaultApp.database();
+                      firebase.auth().onAuthStateChanged( function(firebaseUser) {
+                          viewModel.firebaseUser = firebaseUser;
+                          if(firebaseUser !== null) {
+                            console.log('firebaseUser',firebaseUser);
+                            viewModel.isLogged(true);
+                            if(viewModel.firebaseUser.email !== null){
+                                console.log('firebaseUser email', firebaseUser.email);
+                                viewModel.email(firebaseUser.email);
+                            }
+                          } else {
+                            console.log('not logged in');
+                            viewModel.isLogged(false);
+                            console.log('firebaseUser',firebaseUser);
+                          }
+                      });
+                  } catch (error) {
+                      alert("Loading Firebase result an error: " + error);
+                  }
+              })
+              .fail(function(jqxhr, settings, exception) {
+                  console.log(jqxhr.status);
+                  console.log(settings);
+                  console.log(exception);
+                  alert("Error on loading Firebase. Error number: " + jqxhr.status);
+          });
           // Load locally stored data
           try{
               var city = localStorage.city;
@@ -2106,48 +2012,50 @@ $(document).ready(function() {
           } catch (error) {
               console.log('not possible to load from local storage: ' + error);
           }
-          // Load the map objects
-          try {
-              viewModel.map = new google.maps.Map(document.getElementById('map'),
-                this.mapOptions);
-              viewModel.largeInfowindow = new google.maps.InfoWindow();
-              viewModel.placeInfoWindow = new google.maps.InfoWindow();
-              viewModel.drawingManager = new google.maps.drawing.DrawingManager({
-                  drawingMode: google.maps.drawing.OverlayType.POLYGON,
-                  drawingControl: true,
-                  drawingControlOptions: {
-                  position: google.maps.ControlPosition.TOP_LEFT,
-                  drawingModes: [
-                    google.maps.drawing.OverlayType.POLYGON,
-                  ]
-                }
-              });
-              viewModel.directionsRenderer = new google.maps.DirectionsRenderer();
-          } catch (error) {
-              console.log("Error: " + error);
-              alert("Error on loading Google APIs" +
-                    " Please refresh the browser or verify internet!");
-              return;
-          }
-          // Initialize the Map part of the page and the HTML part
-          try{
-              setTimeout(function(){
+          // Initialize Map
+          var urlGoogleAPIs="https://maps.googleapis.com/maps/api/js?libraries=places,geometry,drawing&key=AIzaSyArfeuIwGwLrR9A2ODUm3xUph780SGJZUw&v=3";
+          $.getScript(urlGoogleAPIs)
+              .done(function(){
+                  viewModel.map = new google.maps.Map(document.getElementById('map'),
+                    this.mapOptions);
+                  viewModel.largeInfowindow = new google.maps.InfoWindow();
+                  viewModel.placeInfoWindow = new google.maps.InfoWindow();
+                  viewModel.drawingManager = new google.maps.drawing.DrawingManager({
+                      drawingMode: google.maps.drawing.OverlayType.POLYGON,
+                      drawingControl: true,
+                      drawingControlOptions: {
+                      position: google.maps.ControlPosition.TOP_LEFT,
+                      drawingModes: [
+                        google.maps.drawing.OverlayType.POLYGON,
+                      ]
+                    }
+                  });
+                  viewModel.directionsRenderer = new google.maps.DirectionsRenderer();
+                  var box = document.getElementById('places-search');
+                  viewModel.searchBox = new google.maps.places.SearchBox(box);
                   viewModel.initMap();
-                  viewModel.initView();
-              }, 1000);
-          } catch (error) {
-              console.log("Error at Map init or view init: " + error);
-          }
+              })
+              .fail(function(jqxhr, settings, exception) {
+                  console.log(jqxhr.status);
+                  console.log(settings);
+                  console.log(exception);
+                  alert("Error on loading Google APIs. Error number: " + jqxhr.status);
+                  return;
+          });
+
+          /* This makes knockout calls the setInfoWindow function when the
+             infoWebsite observable changes. This is necessary because knockout
+             was not updating the radio buttons if the 'click' event was bounded. */
+          viewModel.infoWebsite.subscribe(function(newValue){
+              this.setNewInfoWindow(newValue);
+          }, this);
 
       },
 
   };
 
-
-  // Trying to avoid sync errors. Wait 2s until script loads
-  setTimeout( function() { viewModel.init(); }, 2000);
-
-
   ko.applyBindings(viewModel);
+
+  viewModel.init();
 
 }());
